@@ -1,0 +1,2370 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwOTUzMjEyMDk2ODE5MTUxMzc4NCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzRjYjQ2MGRlMDZlMmIxZmZfaW5kZXguaHRtbC00NTEifSwiZXhwIjoxNzk0MzkyNzcyLCJpYXQiOjE3OTQzODkxNzIsImFsZyI6IlJTMjU2In0.IcsBjvIVAKTrtuTSkZ4CIJTmM5Az8rFtyJz9-Gnva6UjMZqTPyLoQP-e6iU53ATCrJPzqZozi0v3KECaEkc0RNFuIkRmJyetF0vzAbUMBIxV3K5d01-AGNv4NInAmWtLi9MuBroAOkP-1seYDjKHEhKj_t_ZhNf1VTSgMm2A3_dcZS1zJs4y9OtYsvd5kJeMI9-IOod31ab_i_D7ZWMtaVYYL7wVJHrdlhmrmx-QqxAWM1mqN7llw_GIDu26rDCZ3pSWPkQgWHlSqAAyY0QMryPCVw580dOEt9CM4yuZw8ERrSCmXj5S3kpd2Z0_3L4LBAzUgnTme1ZoGy25yyMA6A","c_4cb460de06e2b1ff_index.html-451")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0B0F19">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>TaskOps — Offline Mission Task Tracker</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a'
+            },
+            surface: {
+              base: '#0B0F19',
+              card: '#111827',
+              elevated: '#182235',
+              border: '#1F2937'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Complete fallback & base styles so the app works even 100% offline without CDN */
+    :root {
+      color-scheme: dark;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      margin: 0;
+      background-color: #0B0F19;
+      color: #F1F5F9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .font-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+    input[type="date"], input[type="datetime-local"] {
+      color-scheme: dark;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0F19;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2D3748;
+      border-radius: 9999px;
+    }
+    @keyframes modalPop {
+      from { transform: translateY(12px) scale(0.98); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    .animate-modal {
+      animation: modalPop 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .icon-svg {
+      width: 1rem;
+      height: 1rem;
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.bottom-5{bottom:1.25rem}.bottom-6{bottom:1.5rem}.left-1\/2{left:50%}.right-5{right:1.25rem}.top-0{top:0px}.z-30{z-index:30}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-auto{margin-top:auto;margin-bottom:auto}.mb-1{margin-bottom:0.25rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.ml-auto{margin-left:auto}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mb-2\.5{margin-bottom:0.625rem}.mt-3\.5{margin-top:0.875rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-1\.5{height:0.375rem}.h-10{height:2.5rem}.h-14{height:3.5rem}.h-2{height:0.5rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-7{height:1.75rem}.h-9{height:2.25rem}.min-h-screen{min-height:100vh}.w-1\.5{width:0.375rem}.w-10{width:2.5rem}.w-14{width:3.5rem}.w-2{width:0.5rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-7{width:1.75rem}.w-9{width:2.25rem}.w-full{width:100%}.min-w-0{min-width:0px}.max-w-5xl{max-width:64rem}.max-w-lg{max-width:32rem}.max-w-sm{max-width:24rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-y-3{--tw-translate-y:0.75rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;user-select:none}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-3\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.875rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.875rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.break-words{overflow-wrap:break-word}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-amber-500\/25{border-color:rgb(245 158 11 / 0.25)}.border-blue-400\/30{border-color:rgb(96 165 250 / 0.3)}.border-blue-500\/30{border-color:rgb(59 130 246 / 0.3)}.border-blue-500\/40{border-color:rgb(59 130 246 / 0.4)}.border-emerald-500\/25{border-color:rgb(16 185 129 / 0.25)}.border-emerald-500\/30{border-color:rgb(16 185 129 / 0.3)}.border-emerald-800\/50{border-color:rgb(6 95 70 / 0.5)}.border-rose-500\/30{border-color:rgb(244 63 94 / 0.3)}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-amber-500\/40{border-color:rgb(245 158 11 / 0.4)}.border-blue-500\/25{border-color:rgb(59 130 246 / 0.25)}.border-rose-500\/40{border-color:rgb(244 63 94 / 0.4)}.border-rose-500\/50{border-color:rgb(244 63 94 / 0.5)}.border-rose-500\/70{border-color:rgb(244 63 94 / 0.7)}.border-slate-800\/80{border-color:rgb(30 41 59 / 0.8)}.border-slate-800\/90{border-color:rgb(30 41 59 / 0.9)}.bg-\[\#0B0F19\]{--tw-bg-opacity:1;background-color:rgb(11 15 25 / var(--tw-bg-opacity, 1))}.bg-\[\#0B0F19\]\/95{background-color:rgb(11 15 25 / 0.95)}.bg-\[\#111827\]{--tw-bg-opacity:1;background-color:rgb(17 24 39 / var(--tw-bg-opacity, 1))}.bg-\[\#111827\]\/50{background-color:rgb(17 24 39 / 0.5)}.bg-amber-500\/15{background-color:rgb(245 158 11 / 0.15)}.bg-black\/80{background-color:rgb(0 0 0 / 0.8)}.bg-blue-500\/15{background-color:rgb(59 130 246 / 0.15)}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.bg-blue-600\/20{background-color:rgb(37 99 235 / 0.2)}.bg-emerald-400{--tw-bg-opacity:1;background-color:rgb(52 211 153 / var(--tw-bg-opacity, 1))}.bg-emerald-500{--tw-bg-opacity:1;background-color:rgb(16 185 129 / var(--tw-bg-opacity, 1))}.bg-emerald-500\/15{background-color:rgb(16 185 129 / 0.15)}.bg-emerald-950\/60{background-color:rgb(2 44 34 / 0.6)}.bg-rose-500\/15{background-color:rgb(244 63 94 / 0.15)}.bg-rose-600{--tw-bg-opacity:1;background-color:rgb(225 29 72 / var(--tw-bg-opacity, 1))}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/80{background-color:rgb(30 41 59 / 0.8)}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-emerald-500\/10{background-color:rgb(16 185 129 / 0.1)}.bg-rose-500{--tw-bg-opacity:1;background-color:rgb(244 63 94 / var(--tw-bg-opacity, 1))}.bg-rose-950\/20{background-color:rgb(76 5 25 / 0.2)}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-14{padding-top:3.5rem;padding-bottom:3.5rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.pb-24{padding-bottom:6rem}.pb-3{padding-bottom:0.75rem}.pl-3\.5{padding-left:0.875rem}.pr-8{padding-right:2rem}.pt-1{padding-top:0.25rem}.pt-2{padding-top:0.5rem}.pt-3{padding-top:0.75rem}.pt-4{padding-top:1rem}.text-center{text-align:center}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.text-amber-300\/90{color:rgb(252 211 77 / 0.9)}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-blue-300{--tw-text-opacity:1;color:rgb(147 197 253 / var(--tw-text-opacity, 1))}.text-blue-400{--tw-text-opacity:1;color:rgb(96 165 250 / var(--tw-text-opacity, 1))}.text-cyan-400{--tw-text-opacity:1;color:rgb(34 211 238 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-emerald-300\/90{color:rgb(110 231 183 / 0.9)}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-rose-300{--tw-text-opacity:1;color:rgb(253 164 175 / var(--tw-text-opacity, 1))}.text-rose-300\/90{color:rgb(253 164 175 / 0.9)}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-cyan-300{--tw-text-opacity:1;color:rgb(103 232 249 / var(--tw-text-opacity, 1))}.text-slate-300\/90{color:rgb(203 213 225 / 0.9)}.underline{-webkit-text-decoration-line:underline;text-decoration-line:underline}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.placeholder-slate-500::placeholder{--tw-placeholder-opacity:1;color:rgb(100 116 139 / var(--tw-placeholder-opacity, 1))}.accent-blue-500{accent-color:#3b82f6}.accent-rose-500{accent-color:#f43f5e}.opacity-0{opacity:0}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-blue-600\/30{--tw-shadow-color:rgb(37 99 235 / 0.3);--tw-shadow:var(--tw-shadow-colored)}.shadow-blue-600\/50{--tw-shadow-color:rgb(37 99 235 / 0.5);--tw-shadow:var(--tw-shadow-colored)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.file\:mr-3::file-selector-button{margin-right:0.75rem}.file\:cursor-pointer::file-selector-button{cursor:pointer}.file\:rounded-xl::file-selector-button{border-radius:0.75rem}.file\:border-0::file-selector-button{border-width:0px}.file\:bg-blue-600::file-selector-button{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.file\:px-3\.5::file-selector-button{padding-left:0.875rem;padding-right:0.875rem}.file\:py-2::file-selector-button{padding-top:0.5rem;padding-bottom:0.5rem}.file\:text-xs::file-selector-button{font-size:0.75rem;line-height:1rem}.file\:font-bold::file-selector-button{font-weight:700}.file\:text-white::file-selector-button{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:border-slate-600:hover{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.hover\:bg-blue-500:hover{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.hover\:bg-blue-500\/25:hover{background-color:rgb(59 130 246 / 0.25)}.hover\:bg-emerald-500\/25:hover{background-color:rgb(16 185 129 / 0.25)}.hover\:bg-rose-500:hover{--tw-bg-opacity:1;background-color:rgb(244 63 94 / var(--tw-bg-opacity, 1))}.hover\:bg-rose-500\/25:hover{background-color:rgb(244 63 94 / 0.25)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:bg-rose-500\/20:hover{background-color:rgb(244 63 94 / 0.2)}.hover\:text-blue-300:hover{--tw-text-opacity:1;color:rgb(147 197 253 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:text-rose-300:hover{--tw-text-opacity:1;color:rgb(253 164 175 / var(--tw-text-opacity, 1))}.hover\:file\:bg-blue-500::file-selector-button:hover{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.focus\:border-blue-500:focus{--tw-border-opacity:1;border-color:rgb(59 130 246 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:col-span-2{grid-column:span 2 / span 2}.sm\:col-span-3{grid-column:span 3 / span 3}.sm\:col-span-5{grid-column:span 5 / span 5}.sm\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:flex-row{flex-direction:row}.sm\:items-center{align-items:center}.sm\:justify-center{justify-content:center}.sm\:gap-3\.5{gap:0.875rem}.sm\:p-4{padding:1rem}.sm\:p-6{padding:1.5rem}.sm\:p-5{padding:1.25rem}}@media (min-width: 768px){.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}}</style></head>
+<body class="bg-[#0B0F19] text-slate-100 min-h-screen flex flex-col antialiased pb-24">
+
+  <!-- ==========================================
+       TOP NAVIGATION BAR
+       ========================================== -->
+  <header class="sticky top-0 z-30 bg-[#0B0F19]/95 backdrop-blur-md border-b border-slate-800 px-4 py-3">
+    <div class="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Identity & Storage Status -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shadow-inner shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 class="text-lg font-extrabold tracking-tight text-white leading-none">TaskOps</h1>
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30">Offline PWA</span>
+            <span id="storageBadge" class="inline-flex items-center gap-1.5 text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800/90 text-emerald-300 border border-slate-700">
+              <span id="storageDot" class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span id="storageText">IDB Persistent</span>
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Mission Task &amp; Chronological Action History Tracker</p>
+        </div>
+      </div>
+
+      <!-- Top Action Buttons -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Download Standalone App Button -->
+        <button type="button" onclick="window.downloadStandaloneApp()" title="Download this self-contained HTML file to share or run offline on any device" class="px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition flex items-center gap-1.5 active:scale-95 cursor-pointer">
+          <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"></path>
+          </svg>
+          <span>Download App (.html)</span>
+        </button>
+
+        <!-- Data & Backup Hub Button -->
+        <button type="button" id="backupHubBtn" onclick="window.openBackupModal()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5 active:scale-95 cursor-pointer">
+          <svg class="icon-svg text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+          </svg>
+          <span>CSV / Backup</span>
+        </button>
+
+        <!-- Primary New Task Button -->
+        <button type="button" id="openNewTaskModalBtn" onclick="window.openNewTaskModal()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30 transition flex items-center gap-1.5 active:scale-95 cursor-pointer">
+          <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+          </svg>
+          <span>New Task</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN CONTENT CONTAINER
+       ========================================== -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 pt-4 space-y-4">
+
+    <!-- 4 SUMMARY METRIC CARDS -->
+    <section class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5">
+      <div class="bg-[#111827] border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between">
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Active Tasks</p>
+          <p id="statActive" class="text-2xl font-extrabold text-white mt-0.5 font-mono">2</p>
+        </div>
+        <div class="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="bg-[#111827] border border-amber-500/25 rounded-2xl p-3.5 flex items-center justify-between">
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-amber-300/90">Crit / High</p>
+          <p id="statHighCrit" class="text-2xl font-extrabold text-amber-400 mt-0.5 font-mono">2</p>
+        </div>
+        <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="bg-[#111827] border border-rose-500/30 rounded-2xl p-3.5 flex items-center justify-between">
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-rose-300/90">Overdue</p>
+          <p id="statOverdue" class="text-2xl font-extrabold text-rose-400 mt-0.5 font-mono">1</p>
+        </div>
+        <div class="w-9 h-9 rounded-xl bg-rose-500/15 text-rose-400 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <div class="bg-[#111827] border border-emerald-500/25 rounded-2xl p-3.5 flex items-center justify-between">
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-wider text-emerald-300/90">Completed</p>
+          <p id="statCompleted" class="text-2xl font-extrabold text-emerald-400 mt-0.5 font-mono">1</p>
+        </div>
+        <div class="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATUS TABS & SEARCH / FILTER BAR -->
+    <section class="bg-[#111827] border border-slate-800 rounded-2xl p-3.5 space-y-3">
+      <!-- Lifecycle Tabs -->
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap p-1 bg-[#0B0F19] border border-slate-800 rounded-xl gap-1 text-xs font-semibold">
+          <button type="button" onclick="window.setStatusTab('active')" id="tabBtn-active" class="px-3.5 py-1.5 rounded-lg bg-blue-600 text-white shadow transition cursor-pointer">
+            Active (<span id="tabCountActive">2</span>)
+          </button>
+          <button type="button" onclick="window.setStatusTab('overdue')" id="tabBtn-overdue" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer">
+            Overdue (<span id="tabCountOverdue">1</span>)
+          </button>
+          <button type="button" onclick="window.setStatusTab('completed')" id="tabBtn-completed" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer">
+            Completed (<span id="tabCountCompleted">1</span>)
+          </button>
+          <button type="button" onclick="window.setStatusTab('all')" id="tabBtn-all" class="px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer">
+            All (<span id="tabCountAll">3</span>)
+          </button>
+        </div>
+
+        <button type="button" onclick="window.toggleExpandAllLogs()" id="expandAllBtn" class="px-3 py-1.5 rounded-xl bg-[#0B0F19] hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5 cursor-pointer">
+          <svg class="icon-svg text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span id="expandAllText">Expand All Action Logs</span>
+        </button>
+      </div>
+
+      <!-- Search, Assignee, Priority & Sort Controls -->
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+        <div class="relative sm:col-span-5">
+          <input type="text" id="searchInput" oninput="window.handleFilterChange()" placeholder="Search task name, description, assignee, or action log..." class="w-full pl-3.5 pr-8 py-2 bg-[#0B0F19] border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div class="sm:col-span-2">
+          <select id="assigneeFilter" onchange="window.handleFilterChange()" class="w-full px-2.5 py-2 bg-[#0B0F19] border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-blue-500"><option value="ALL">All Assignees (3)</option><option value="Combat Engineer Platoon 1">Combat Engineer Platoon 1</option><option value="Maintenance Section">Maintenance Section</option><option value="XO / Napierala">XO / Napierala</option></select>
+        </div>
+
+        <div class="sm:col-span-2">
+          <select id="priorityFilter" onchange="window.handleFilterChange()" class="w-full px-2.5 py-2 bg-[#0B0F19] border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <option value="ALL">All Priorities</option>
+            <option value="CRITICAL">Critical Only</option>
+            <option value="HIGH">High Only</option>
+            <option value="MEDIUM">Medium Only</option>
+            <option value="LOW">Low Only</option>
+          </select>
+        </div>
+
+        <div class="sm:col-span-3">
+          <select id="sortBy" onchange="window.handleFilterChange()" class="w-full px-2.5 py-2 bg-[#0B0F19] border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+            <option value="dueDateAsc">Sort: Due Date (Soonest)</option>
+            <option value="priority">Sort: Priority (Crit → Low)</option>
+            <option value="lastActionDesc">Sort: Last Action Time</option>
+            <option value="assignedDateDesc">Sort: Date Assigned</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMPTY STATE -->
+    <div id="emptyState" class="hidden flex-col items-center justify-center py-14 px-4 text-center border-2 border-dashed border-slate-800 rounded-3xl bg-[#111827]/50">
+      <div class="w-14 h-14 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-400 mb-3">
+        <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+        </svg>
+      </div>
+      <h3 class="text-base font-bold text-slate-200">No Matching Tasks</h3>
+      <p class="text-xs text-slate-400 max-w-sm mt-1 mb-4">No tasks match your current filters, or no tasks have been logged yet.</p>
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="window.resetAllFilters()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 rounded-xl border border-slate-700 transition cursor-pointer">
+          Reset Filters
+        </button>
+        <button type="button" onclick="window.openNewTaskModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white rounded-xl transition cursor-pointer">
+          + Create New Task
+        </button>
+      </div>
+    </div>
+
+    <!-- TASK CARDS GRID -->
+    <div id="taskList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <article class="bg-[#111827] border border-rose-500/70 rounded-3xl p-4 sm:p-5 flex flex-col justify-between shadow-lg hover:border-slate-600 transition">
+            <div>
+              <!-- Card Header Badges & Quick Controls -->
+              <div class="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <button type="button" onclick="window.toggleTaskComplete('TASK-102')" class="px-2.5 py-1 rounded-xl text-[11px] font-bold border transition cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700">
+                    ○ Mark Done
+                  </button>
+
+                  <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold border bg-rose-500/15 text-rose-300 border-rose-500/40">
+                    CRITICAL
+                  </span>
+
+                  
+                    <span class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-extrabold bg-rose-500 text-slate-950">
+                      OVERDUE
+                    </span>
+                  
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="window.openEditTaskModal('TASK-102')" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition cursor-pointer">
+                    Edit
+                  </button>
+                  <button type="button" onclick="window.confirmDeleteTask('TASK-102')" class="px-2 py-1 rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-700 text-xs font-semibold transition cursor-pointer" title="Delete Task">
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- Task Title & Description -->
+              <h3 class="text-base font-bold text-white leading-snug">
+                Expedient Linear Charge Density Calculations
+              </h3>
+              
+                <p class="text-xs text-slate-300/90 mt-1 leading-relaxed">Compute overpressure margins and Mach stem interaction matrices for breach tests.</p>
+              
+
+              <!-- Core Metadata Grid: Assigned To, Assigned Date, Due Date -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-slate-800/90 text-[11px]">
+                <div class="bg-[#0B0F19] px-3 py-2 rounded-xl border border-slate-800/80">
+                  <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Assigned To</span>
+                  <span class="font-bold text-slate-100 truncate block mt-0.5">XO / Napierala</span>
+                </div>
+                <div class="bg-[#0B0F19] px-3 py-2 rounded-xl border border-slate-800/80">
+                  <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Date Assigned</span>
+                  <span class="font-mono text-slate-200 block mt-0.5">Nov 11, 2026</span>
+                </div>
+                <div class="bg-[#0B0F19] px-3 py-2 rounded-xl border border-rose-500/50 bg-rose-950/20">
+                  <span class="text-[10px] uppercase tracking-wider text-rose-300 block">Due Date</span>
+                  <span class="font-mono font-bold text-rose-300 block mt-0.5">Nov 11, 2026, 1:33 PM</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- LAST ACTION TAKEN & EXPANDABLE ACTION TRACKER DROPDOWN -->
+            <div class="mt-3.5 rounded-2xl bg-[#0B0F19] border border-blue-500/25 overflow-hidden">
+              <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-400">Last Action Taken</span>
+                    <span class="text-[10px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-1.5 py-0.5 rounded">
+                      Nov 11, 2026, 2:33 PM
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-100 font-medium mt-1 break-words">
+                    Shock front parameters computed in engineering log
+                  </p>
+                </div>
+
+                <!-- Action History Dropdown Toggle Button -->
+                <button type="button" onclick="window.toggleTaskDropdown('TASK-102')" class="px-3 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-between sm:justify-center gap-1.5 shrink-0 cursor-pointer bg-[#111827] hover:bg-slate-800 text-cyan-300 border-slate-700">
+                  <span>Action Tracker (2)</span>
+                  <span>▾</span>
+                </button>
+              </div>
+
+              
+            </div>
+          </article>
+        
+          <article class="bg-[#111827] border border-slate-800 rounded-3xl p-4 sm:p-5 flex flex-col justify-between shadow-lg hover:border-slate-600 transition">
+            <div>
+              <!-- Card Header Badges & Quick Controls -->
+              <div class="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <button type="button" onclick="window.toggleTaskComplete('TASK-101')" class="px-2.5 py-1 rounded-xl text-[11px] font-bold border transition cursor-pointer bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700">
+                    ○ Mark Done
+                  </button>
+
+                  <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold border bg-amber-500/15 text-amber-300 border-amber-500/40">
+                    HIGH
+                  </span>
+
+                  
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="window.openEditTaskModal('TASK-101')" class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition cursor-pointer">
+                    Edit
+                  </button>
+                  <button type="button" onclick="window.confirmDeleteTask('TASK-101')" class="px-2 py-1 rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-700 text-xs font-semibold transition cursor-pointer" title="Delete Task">
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- Task Title & Description -->
+              <h3 class="text-base font-bold text-white leading-snug">
+                Camp Hansen Perimeter Fence Inspection
+              </h3>
+              
+                <p class="text-xs text-slate-300/90 mt-1 leading-relaxed">Verify structural breach integrity along sector bravo perimeter and log post markers.</p>
+              
+
+              <!-- Core Metadata Grid: Assigned To, Assigned Date, Due Date -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-slate-800/90 text-[11px]">
+                <div class="bg-[#0B0F19] px-3 py-2 rounded-xl border border-slate-800/80">
+                  <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Assigned To</span>
+                  <span class="font-bold text-slate-100 truncate block mt-0.5">Combat Engineer Platoon 1</span>
+                </div>
+                <div class="bg-[#0B0F19] px-3 py-2 rounded-xl border border-slate-800/80">
+                  <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Date Assigned</span>
+                  <span class="font-mono text-slate-200 block mt-0.5">Nov 11, 2026</span>
+                </div>
+                <div class="bg-[#0B0F19] px-3 py-2 rounded-xl border border-slate-800/80">
+                  <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Due Date</span>
+                  <span class="font-mono font-bold text-slate-100 block mt-0.5">Nov 13, 2026, 6:33 AM</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- LAST ACTION TAKEN & EXPANDABLE ACTION TRACKER DROPDOWN -->
+            <div class="mt-3.5 rounded-2xl bg-[#0B0F19] border border-blue-500/25 overflow-hidden">
+              <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-400">Last Action Taken</span>
+                    <span class="text-[10px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-1.5 py-0.5 rounded">
+                      Nov 11, 2026, 4:33 PM
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-100 font-medium mt-1 break-words">
+                    Reconnaissance sweep completed along 800m marker
+                  </p>
+                </div>
+
+                <!-- Action History Dropdown Toggle Button -->
+                <button type="button" onclick="window.toggleTaskDropdown('TASK-101')" class="px-3 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-between sm:justify-center gap-1.5 shrink-0 cursor-pointer bg-[#111827] hover:bg-slate-800 text-cyan-300 border-slate-700">
+                  <span>Action Tracker (3)</span>
+                  <span>▾</span>
+                </button>
+              </div>
+
+              
+            </div>
+          </article>
+        </div>
+
+  </main>
+
+  <!-- FLOATING ACTION BUTTON FOR MOBILE EASY REACH -->
+  <button type="button" onclick="window.openNewTaskModal()" class="fixed bottom-5 right-5 z-30 flex items-center gap-2 px-5 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold text-xs shadow-2xl shadow-blue-600/50 border border-blue-400/30 transition cursor-pointer">
+    <svg class="icon-svg" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"></path>
+    </svg>
+    <span>New Task</span>
+  </button>
+
+  <!-- ==========================================
+       MODAL 1: CREATE / EDIT TASK
+       ========================================== -->
+  <div id="taskModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-[#111827] border border-slate-700 w-full max-w-lg rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 my-auto animate-modal">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h2 id="modalTitle" class="text-base font-bold text-white flex items-center gap-2">
+          <span>Create Operational Task</span>
+        </h2>
+        <button type="button" onclick="window.closeTaskModal()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <form id="taskForm" onsubmit="window.saveTaskForm(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="taskId">
+
+        <!-- 1. Task Name -->
+        <div>
+          <label for="taskName" class="block font-semibold text-slate-300 mb-1">1. Task Name <span class="text-rose-400">*</span></label>
+          <input type="text" id="taskName" required="" placeholder="e.g., Inspect Perimeter Sector Bravo" class="w-full px-3.5 py-2.5 bg-[#0B0F19] border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500">
+        </div>
+
+        <!-- 2. Description -->
+        <div>
+          <label for="taskDescription" class="block font-semibold text-slate-300 mb-1">2. Task Description / Notes</label>
+          <textarea id="taskDescription" rows="2" placeholder="Detailed scope, coordinates, requirements, or notes..." class="w-full px-3.5 py-2 bg-[#0B0F19] border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500"></textarea>
+        </div>
+
+        <!-- 3. Assigned To & 6. Priority -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="taskAssignedTo" class="block font-semibold text-slate-300 mb-1">3. Assigned To <span class="text-rose-400">*</span></label>
+            <input type="text" id="taskAssignedTo" required="" placeholder="Person, Team, or Role" class="w-full px-3.5 py-2.5 bg-[#0B0F19] border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label for="taskPriority" class="block font-semibold text-slate-300 mb-1">6. Priority <span class="text-rose-400">*</span></label>
+            <select id="taskPriority" class="w-full px-3.5 py-2.5 bg-[#0B0F19] border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500 font-semibold">
+              <option value="CRITICAL">CRITICAL — Urgent Blocker</option>
+              <option value="HIGH">HIGH — High Priority</option>
+              <option value="MEDIUM" selected="">MEDIUM — Standard</option>
+              <option value="LOW">LOW — Routine</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 4. When Assigned & 8. Due Date -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label for="taskAssignedDate" class="block font-semibold text-slate-300 mb-1">4. Date Assigned <span class="text-rose-400">*</span></label>
+            <input type="date" id="taskAssignedDate" required="" class="w-full px-3.5 py-2.5 bg-[#0B0F19] border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label for="taskDueDate" class="block font-semibold text-slate-300 mb-1">8. Due Date &amp; Time <span class="text-rose-400">*</span></label>
+            <input type="datetime-local" id="taskDueDate" required="" class="w-full px-3.5 py-2.5 bg-[#0B0F19] border border-slate-700 rounded-xl text-white font-mono focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <!-- 5. Last Action Taken & 7. Date/Time of Last Action -->
+        <div class="p-3.5 rounded-2xl bg-[#0B0F19] border border-blue-500/30 space-y-3">
+          <div class="flex items-center justify-between">
+            <label for="taskLastAction" class="font-bold text-blue-300">5. Last Action Taken (Logs to History Tracker)</label>
+            <span id="autoStampBadge" class="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/50 px-2 py-0.5 rounded">Auto-Stamps Now</span>
+          </div>
+          <input type="text" id="taskLastAction" oninput="window.autoStampActionTime()" placeholder="e.g., Task created and assigned to team" class="w-full px-3.5 py-2.5 bg-[#111827] border border-slate-700 rounded-xl text-white focus:outline-none focus:border-blue-500">
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="taskLastActionTimestamp" class="font-semibold text-slate-400 text-[11px]">7. Date &amp; Time Last Action Was Taken</label>
+              <button type="button" onclick="window.autoStampActionTime()" class="text-[10px] text-blue-400 hover:text-blue-300 underline cursor-pointer">
+                Set to Current Time
+              </button>
+            </div>
+            <input type="datetime-local" id="taskLastActionTimestamp" class="w-full px-3.5 py-2 bg-[#111827] border border-slate-700 rounded-xl text-slate-200 text-xs font-mono focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <!-- Completion Checkbox -->
+        <label class="flex items-center gap-2.5 pt-1 cursor-pointer select-none">
+          <input type="checkbox" id="taskIsCompleted" class="w-4 h-4 rounded accent-blue-500 cursor-pointer">
+          <span class="font-medium text-slate-300">Mark this task as <strong class="text-emerald-400">Completed / Archived</strong></span>
+        </label>
+
+        <!-- Modal Footer Buttons -->
+        <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+          <button type="button" id="deleteTaskBtn" onclick="window.requestDeleteFromModal()" class="hidden px-3.5 py-2 rounded-xl bg-rose-500/15 border border-rose-500/30 hover:bg-rose-500/25 text-rose-300 font-semibold transition cursor-pointer">
+            Delete Task
+          </button>
+          <div class="flex items-center gap-2 ml-auto">
+            <button type="button" onclick="window.closeTaskModal()" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold transition cursor-pointer">
+              Cancel
+            </button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-600/30 transition cursor-pointer">
+              Save Task
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 2: DATA & BACKUP HUB (CSV / JSON)
+       ========================================== -->
+  <div id="backupModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-[#111827] border border-slate-700 w-full max-w-lg rounded-3xl p-6 shadow-2xl space-y-5 my-auto animate-modal">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h2 class="text-base font-bold text-white flex items-center gap-2">
+          <span>Cross-Device CSV &amp; Backup Hub</span>
+        </h2>
+        <button type="button" onclick="window.closeBackupModal()" class="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-800 transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- 1. Export Section -->
+        <div class="p-4 rounded-2xl bg-[#0B0F19] border border-slate-800 space-y-3">
+          <div class="font-bold text-emerald-400 uppercase tracking-wider flex items-center justify-between">
+            <span>1. Export Tasks from This Device</span>
+            <span class="text-[10px] text-slate-400 font-mono">Includes Action History</span>
+          </div>
+          <p class="text-slate-400 text-[11px] leading-relaxed">
+            Export your tasks and complete chronological action history to transfer to another phone/PC or open in Excel/Sheets.
+          </p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <button type="button" onclick="window.exportToCsv()" class="py-2.5 px-3 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 rounded-xl font-bold transition cursor-pointer">
+              Download CSV (.csv)
+            </button>
+            <button type="button" onclick="window.exportToJson()" class="py-2.5 px-3 bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-blue-300 rounded-xl font-bold transition cursor-pointer">
+              Download JSON (.json)
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Import Section -->
+        <div class="p-4 rounded-2xl bg-[#0B0F19] border border-slate-800 space-y-3">
+          <div class="font-bold text-blue-400 uppercase tracking-wider flex items-center justify-between">
+            <span>2. Upload CSV or JSON File</span>
+            <span class="text-[10px] text-slate-400 font-mono">RFC-4180 Compliant</span>
+          </div>
+          <p class="text-slate-400 text-[11px] leading-relaxed">
+            Select an exported `.csv` or `.json` file to restore or merge tasks onto this device.
+          </p>
+
+          <input type="file" id="importFileInput" accept=".csv,.json,text/csv,application/json" class="block w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:cursor-pointer border border-slate-700 rounded-xl p-1.5 bg-[#111827]">
+
+          <div class="flex items-center gap-5 pt-1">
+            <span class="text-[11px] text-slate-300 font-semibold">Import Mode:</span>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="importMode" value="merge" checked="" class="accent-blue-500">
+              <span class="text-slate-200">Merge &amp; Update IDs</span>
+            </label>
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="radio" name="importMode" value="replace" class="accent-rose-500">
+              <span class="text-rose-300">Replace All</span>
+            </label>
+          </div>
+
+          <button type="button" onclick="window.executeFileImport()" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
+            Upload &amp; Sync File Now
+          </button>
+        </div>
+
+        <!-- 3. Reset Demo / Clear All -->
+        <div class="p-3.5 rounded-2xl bg-[#0B0F19] border border-slate-800 flex items-center justify-between gap-2">
+          <span class="text-[11px] text-slate-400">Database Controls:</span>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="window.restoreDemoTasks()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer">
+              Restore Demo Tasks
+            </button>
+            <button type="button" onclick="window.wipeAllTasks()" class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 text-xs font-semibold border border-rose-500/30 transition cursor-pointer">
+              Wipe All
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 3: CUSTOM CONFIRM DIALOG (NO NATIVE ALERT/CONFIRM)
+       ========================================== -->
+  <div id="confirmModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-[#111827] border border-slate-700 w-full max-w-sm rounded-3xl p-5 shadow-2xl space-y-4 animate-modal">
+      <div>
+        <h3 id="confirmTitle" class="text-sm font-bold text-white">Confirm Action</h3>
+        <p id="confirmMessage" class="text-xs text-slate-400 mt-1 leading-relaxed">Are you sure?</p>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button type="button" onclick="window.closeConfirmModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition cursor-pointer">
+          Cancel
+        </button>
+        <button type="button" id="confirmAcceptBtn" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white transition cursor-pointer">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-3 transition-all duration-200 bg-slate-100 text-slate-950 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-bold">
+    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+    <span id="toastMessage">Task saved</span>
+  </div>
+
+  <!-- =========================================================
+       APPLICATION ENGINE (100% Self-Contained, Safe Escapes)
+       ========================================================= -->
+  <script>
+    const DB_NAME = 'TaskOps_Offline_DB_v3';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'tasks';
+    const LOCAL_STORAGE_KEY = 'TaskOps_Fallback_Tasks_v3';
+
+    let dbInstance = null;
+    let tasks = [];
+    let activeTab = 'active';
+    let expandedDropdownIds = new Set();
+    let expandAllLogs = false;
+    let pendingConfirmAction = null;
+
+    // ==========================================
+    // DATE & TIME HELPERS
+    // ==========================================
+    function getNowLocalIso() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      return `${y}-${m}-${d}T${hh}:${mm}`;
+    }
+
+    function getOffsetLocalIso(hoursOffset) {
+      const now = new Date(Date.now() + hoursOffset * 3600000);
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      return `${y}-${m}-${d}T${hh}:${mm}`;
+    }
+
+    function getTodayDateOnly() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      return `${y}-${m}-${d}`;
+    }
+
+    function formatDateTimeDisplay(val) {
+      if (!val) return 'Not set';
+      const d = new Date(val);
+      if (isNaN(d.getTime())) return String(val);
+      return d.toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      });
+    }
+
+    function formatDateOnlyDisplay(val) {
+      if (!val) return 'Not set';
+      const parts = String(val).split('T')[0].split('-');
+      if (parts.length === 3) {
+        const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        if (!isNaN(d.getTime())) {
+          return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+      }
+      return String(val);
+    }
+
+    function isTaskOverdue(task) {
+      if (!task || task.completed || !task.dueDate) return false;
+      const dueTime = new Date(task.dueDate).getTime();
+      if (isNaN(dueTime)) return false;
+      return dueTime < Date.now();
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function normalizeTask(raw) {
+      const id = String(raw.id || ('TASK-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 5).toUpperCase()));
+      const nowIso = getNowLocalIso();
+      const lastActionTaken = String(raw.lastActionTaken || 'Task created').trim();
+      const lastActionTimestamp = raw.lastActionTimestamp || nowIso;
+
+      let history = Array.isArray(raw.actionHistory) ? [...raw.actionHistory] : [];
+      history = history
+        .filter(h => h && typeof h.action === 'string' && h.action.trim() !== '')
+        .map(h => ({
+          timestamp: h.timestamp || lastActionTimestamp,
+          action: h.action.trim()
+        }));
+
+      if (history.length === 0) {
+        history.push({
+          timestamp: lastActionTimestamp,
+          action: lastActionTaken
+        });
+      }
+
+      // Sort chronological (oldest -> newest) and sync latest
+      history.sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime());
+      const latest = history[history.length - 1];
+
+      const validPriorities = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+      const priority = validPriorities.includes(String(raw.priority || '').toUpperCase())
+        ? String(raw.priority).toUpperCase()
+        : 'MEDIUM';
+
+      return {
+        id,
+        name: String(raw.name || 'Untitled Task').trim(),
+        description: String(raw.description || '').trim(),
+        assignedTo: String(raw.assignedTo || 'Unassigned').trim(),
+        assignedDate: String(raw.assignedDate || getTodayDateOnly()).split('T')[0],
+        dueDate: raw.dueDate || getOffsetLocalIso(48),
+        priority,
+        completed: Boolean(raw.completed === true || raw.completed === 'true' || raw.status === 'COMPLETED'),
+        lastActionTaken: latest.action,
+        lastActionTimestamp: latest.timestamp,
+        actionHistory: history
+      };
+    }
+
+    function getSeedTasks() {
+      return [
+        normalizeTask({
+          id: 'TASK-101',
+          name: 'Camp Hansen Perimeter Fence Inspection',
+          description: 'Verify structural breach integrity along sector bravo perimeter and log post markers.',
+          assignedTo: 'Combat Engineer Platoon 1',
+          assignedDate: getTodayDateOnly(),
+          dueDate: getOffsetLocalIso(36),
+          completed: false,
+          priority: 'HIGH',
+          actionHistory: [
+            { timestamp: getOffsetLocalIso(-28), action: 'Order issued by Operations section' },
+            { timestamp: getOffsetLocalIso(-14), action: 'Tool assignment and loadout staging complete' },
+            { timestamp: getOffsetLocalIso(-2), action: 'Reconnaissance sweep completed along 800m marker' }
+          ]
+        }),
+        normalizeTask({
+          id: 'TASK-102',
+          name: 'Expedient Linear Charge Density Calculations',
+          description: 'Compute overpressure margins and Mach stem interaction matrices for breach tests.',
+          assignedTo: 'XO / Napierala',
+          assignedDate: getTodayDateOnly(),
+          dueDate: getOffsetLocalIso(-5),
+          completed: false,
+          priority: 'CRITICAL',
+          actionHistory: [
+            { timestamp: getOffsetLocalIso(-30), action: 'Initial Chapman-Jouguet formula setup' },
+            { timestamp: getOffsetLocalIso(-4), action: 'Shock front parameters computed in engineering log' }
+          ]
+        }),
+        normalizeTask({
+          id: 'TASK-103',
+          name: 'Quarterly Motor-T Equipment Inventory',
+          description: 'Conduct serial verification on all logistics 7-ton vehicles and winch packs.',
+          assignedTo: 'Maintenance Section',
+          assignedDate: getTodayDateOnly(),
+          dueDate: getOffsetLocalIso(-24),
+          completed: true,
+          priority: 'MEDIUM',
+          actionHistory: [
+            { timestamp: getOffsetLocalIso(-48), action: 'Phase 1 vehicle checks underway' },
+            { timestamp: getOffsetLocalIso(-20), action: 'Final inspection signoff completed' }
+          ]
+        })
+      ];
+    }
+
+    // ==========================================
+    // HYBRID STORAGE (IndexedDB + LocalStorage Fallback)
+    // ==========================================
+    function saveToLocalStorageFallback(list) {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    function loadFromLocalStorageFallback() {
+      try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) return parsed.map(normalizeTask);
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    async function initStorage() {
+      const badgeText = document.getElementById('storageText');
+      try {
+        if (navigator.storage && navigator.storage.persist) {
+          navigator.storage.persist().catch(() => {});
+        }
+        if (!window.indexedDB) throw new Error('No IDB');
+
+        dbInstance = await new Promise((resolve, reject) => {
+          const req = indexedDB.open(DB_NAME, DB_VERSION);
+          req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+              db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+          };
+          req.onsuccess = (e) => resolve(e.target.result);
+          req.onerror = (e) => reject(e.target.error);
+        });
+
+        const stored = await new Promise((resolve, reject) => {
+          const tx = dbInstance.transaction(STORE_NAME, 'readonly');
+          const req = tx.objectStore(STORE_NAME).getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => reject(req.error);
+        });
+
+        if (stored.length > 0) {
+          tasks = stored.map(normalizeTask);
+          saveToLocalStorageFallback(tasks);
+        } else {
+          const localFallback = loadFromLocalStorageFallback();
+          tasks = (localFallback && localFallback.length > 0) ? localFallback : getSeedTasks();
+          await syncAllTasksToStorage();
+        }
+        badgeText.textContent = 'IDB Persistent';
+      } catch (err) {
+        const localFallback = loadFromLocalStorageFallback();
+        tasks = (localFallback && localFallback.length > 0) ? localFallback : getSeedTasks();
+        saveToLocalStorageFallback(tasks);
+        badgeText.textContent = 'Local Storage';
+      }
+    }
+
+    async function syncAllTasksToStorage() {
+      tasks = tasks.map(normalizeTask);
+      saveToLocalStorageFallback(tasks);
+      if (!dbInstance) return;
+      try {
+        await new Promise((resolve, reject) => {
+          const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          store.clear();
+          tasks.forEach(t => store.put(t));
+          tx.oncomplete = () => resolve();
+          tx.onerror = () => reject(tx.error);
+        });
+      } catch (e) {}
+    }
+
+    // ==========================================
+    // TOAST & CONFIRMATION HELPERS
+    // ==========================================
+    let toastTimer = null;
+    window.showToast = function(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = msg;
+      toast.classList.remove('opacity-0', 'translate-y-3');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-3');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 2600);
+    };
+
+    window.openConfirmModal = function(title, message, onConfirm) {
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMessage').textContent = message;
+      pendingConfirmAction = onConfirm;
+      const m = document.getElementById('confirmModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    };
+
+    window.closeConfirmModal = function() {
+      const m = document.getElementById('confirmModal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+      pendingConfirmAction = null;
+    };
+
+    document.getElementById('confirmAcceptBtn').addEventListener('click', () => {
+      if (typeof pendingConfirmAction === 'function') pendingConfirmAction();
+      window.closeConfirmModal();
+    });
+
+    // ==========================================
+    // RENDER ENGINE
+    // ==========================================
+    function updateAssigneeDropdown() {
+      const select = document.getElementById('assigneeFilter');
+      const currentVal = select.value || 'ALL';
+      const assignees = Array.from(new Set(tasks.map(t => t.assignedTo).filter(Boolean))).sort();
+      select.innerHTML = '<option value="ALL">All Assignees (' + assignees.length + ')</option>' +
+        assignees.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+      select.value = assignees.includes(currentVal) ? currentVal : 'ALL';
+    }
+
+    window.renderTasks = function() {
+      const activeList = tasks.filter(t => !t.completed);
+      const completedList = tasks.filter(t => t.completed);
+      const overdueList = tasks.filter(t => isTaskOverdue(t));
+      const critHighList = activeList.filter(t => t.priority === 'CRITICAL' || t.priority === 'HIGH');
+
+      document.getElementById('statActive').textContent = activeList.length;
+      document.getElementById('statHighCrit').textContent = critHighList.length;
+      document.getElementById('statOverdue').textContent = overdueList.length;
+      document.getElementById('statCompleted').textContent = completedList.length;
+
+      document.getElementById('tabCountActive').textContent = activeList.length;
+      document.getElementById('tabCountOverdue').textContent = overdueList.length;
+      document.getElementById('tabCountCompleted').textContent = completedList.length;
+      document.getElementById('tabCountAll').textContent = tasks.length;
+
+      updateAssigneeDropdown();
+
+      const searchQ = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      const assigneeVal = document.getElementById('assigneeFilter').value || 'ALL';
+      const priorityVal = document.getElementById('priorityFilter').value || 'ALL';
+      const sortVal = document.getElementById('sortBy').value || 'dueDateAsc';
+
+      let filtered = tasks.filter(task => {
+        if (activeTab === 'active' && task.completed) return false;
+        if (activeTab === 'completed' && !task.completed) return false;
+        if (activeTab === 'overdue' && !isTaskOverdue(task)) return false;
+
+        if (assigneeVal !== 'ALL' && task.assignedTo !== assigneeVal) return false;
+        if (priorityVal !== 'ALL' && task.priority !== priorityVal) return false;
+
+        if (searchQ !== '') {
+          const inName = (task.name || '').toLowerCase().includes(searchQ);
+          const inDesc = (task.description || '').toLowerCase().includes(searchQ);
+          const inAssignee = (task.assignedTo || '').toLowerCase().includes(searchQ);
+          const inHistory = (task.actionHistory || []).some(h => (h.action || '').toLowerCase().includes(searchQ));
+          if (!inName && !inDesc && !inAssignee && !inHistory) return false;
+        }
+        return true;
+      });
+
+      const priorityWeight = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+      filtered.sort((a, b) => {
+        if (sortVal === 'dueDateAsc') {
+          return new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime();
+        }
+        if (sortVal === 'priority') {
+          const diff = (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0);
+          return diff !== 0 ? diff : (new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime());
+        }
+        if (sortVal === 'lastActionDesc') {
+          return new Date(b.lastActionTimestamp || 0).getTime() - new Date(a.lastActionTimestamp || 0).getTime();
+        }
+        if (sortVal === 'assignedDateDesc') {
+          return String(b.assignedDate || '').localeCompare(String(a.assignedDate || ''));
+        }
+        return 0;
+      });
+
+      const container = document.getElementById('taskList');
+      const emptyState = document.getElementById('emptyState');
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        emptyState.classList.add('flex');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      emptyState.classList.remove('flex');
+
+      const priorityStyles = {
+        CRITICAL: 'bg-rose-500/15 text-rose-300 border-rose-500/40',
+        HIGH: 'bg-amber-500/15 text-amber-300 border-amber-500/40',
+        MEDIUM: 'bg-blue-500/15 text-blue-300 border-blue-500/40',
+        LOW: 'bg-slate-700/50 text-slate-300 border-slate-600'
+      };
+
+      container.innerHTML = filtered.map(task => {
+        const overdue = isTaskOverdue(task);
+        const history = Array.isArray(task.actionHistory) ? task.actionHistory : [];
+        const isDropdownOpen = expandAllLogs || expandedDropdownIds.has(task.id);
+
+        return `
+          <article class="bg-[#111827] border ${overdue ? 'border-rose-500/70' : task.completed ? 'border-emerald-500/30' : 'border-slate-800'} rounded-3xl p-4 sm:p-5 flex flex-col justify-between shadow-lg hover:border-slate-600 transition">
+            <div>
+              <!-- Card Header Badges & Quick Controls -->
+              <div class="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <button
+                    type="button"
+                    onclick="window.toggleTaskComplete('${escapeHtml(task.id)}')"
+                    class="px-2.5 py-1 rounded-xl text-[11px] font-bold border transition cursor-pointer ${
+                      task.completed
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                    }"
+                  >
+                    ${task.completed ? '✓ Completed' : '○ Mark Done'}
+                  </button>
+
+                  <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-mono font-bold border ${priorityStyles[task.priority] || priorityStyles.MEDIUM}">
+                    ${escapeHtml(task.priority)}
+                  </span>
+
+                  ${overdue ? `
+                    <span class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-extrabold bg-rose-500 text-slate-950">
+                      OVERDUE
+                    </span>
+                  ` : ''}
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onclick="window.openEditTaskModal('${escapeHtml(task.id)}')"
+                    class="px-2.5 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition cursor-pointer"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onclick="window.confirmDeleteTask('${escapeHtml(task.id)}')"
+                    class="px-2 py-1 rounded-xl bg-slate-800 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-700 text-xs font-semibold transition cursor-pointer"
+                    title="Delete Task"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+
+              <!-- Task Title & Description -->
+              <h3 class="text-base font-bold ${task.completed ? 'line-through text-slate-400' : 'text-white'} leading-snug">
+                ${escapeHtml(task.name)}
+              </h3>
+              ${task.description ? `
+                <p class="text-xs text-slate-300/90 mt-1 leading-relaxed">${escapeHtml(task.description)}</p>
+              ` : ''}
+
+              <!-- Core Metadata Grid: Assigned To, Assigned Date, Due Date -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3.5 pt-3 border-t border-slate-800/90 text-[11px]">
+                <div class="bg-[#0B0F19] px-3 py-2 rounded-xl border border-slate-800/80">
+                  <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Assigned To</span>
+                  <span class="font-bold text-slate-100 truncate block mt-0.5">${escapeHtml(task.assignedTo)}</span>
+                </div>
+                <div class="bg-[#0B0F19] px-3 py-2 rounded-xl border border-slate-800/80">
+                  <span class="text-[10px] uppercase tracking-wider text-slate-400 block">Date Assigned</span>
+                  <span class="font-mono text-slate-200 block mt-0.5">${formatDateOnlyDisplay(task.assignedDate)}</span>
+                </div>
+                <div class="bg-[#0B0F19] px-3 py-2 rounded-xl border ${overdue ? 'border-rose-500/50 bg-rose-950/20' : 'border-slate-800/80'}">
+                  <span class="text-[10px] uppercase tracking-wider ${overdue ? 'text-rose-300' : 'text-slate-400'} block">Due Date</span>
+                  <span class="font-mono font-bold ${overdue ? 'text-rose-300' : 'text-slate-100'} block mt-0.5">${formatDateTimeDisplay(task.dueDate)}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- LAST ACTION TAKEN & EXPANDABLE ACTION TRACKER DROPDOWN -->
+            <div class="mt-3.5 rounded-2xl bg-[#0B0F19] border border-blue-500/25 overflow-hidden">
+              <div class="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-400">Last Action Taken</span>
+                    <span class="text-[10px] font-mono text-emerald-300 bg-emerald-500/10 border border-emerald-500/25 px-1.5 py-0.5 rounded">
+                      ${formatDateTimeDisplay(task.lastActionTimestamp)}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-100 font-medium mt-1 break-words">
+                    ${escapeHtml(task.lastActionTaken)}
+                  </p>
+                </div>
+
+                <!-- Action History Dropdown Toggle Button -->
+                <button
+                  type="button"
+                  onclick="window.toggleTaskDropdown('${escapeHtml(task.id)}')"
+                  class="px-3 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-between sm:justify-center gap-1.5 shrink-0 cursor-pointer ${
+                    isDropdownOpen
+                      ? 'bg-blue-600/20 text-blue-200 border-blue-400/40'
+                      : 'bg-[#111827] hover:bg-slate-800 text-cyan-300 border-slate-700'
+                  }"
+                >
+                  <span>Action Tracker (${history.length})</span>
+                  <span>${isDropdownOpen ? '▴' : '▾'}</span>
+                </button>
+              </div>
+
+              ${isDropdownOpen ? `
+                <div class="border-t border-slate-800 bg-[#0e1422] p-3 space-y-2.5">
+                  <!-- Quick Inline Action Log Form -->
+                  <form onsubmit="window.submitQuickInlineAction(event, '${escapeHtml(task.id)}')" class="flex gap-1.5">
+                    <input
+                      type="text"
+                      id="quickInput-${escapeHtml(task.id)}"
+                      required
+                      placeholder="Type completed action (auto-stamps time)..."
+                      class="flex-1 px-3 py-1.5 bg-[#0B0F19] border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                    />
+                    <button
+                      type="submit"
+                      class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shrink-0 cursor-pointer"
+                    >
+                      + Log
+                    </button>
+                  </form>
+
+                  <!-- Chronological History List (Newest on top) -->
+                  <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                    ${history.slice().reverse().map((item, idx) => `
+                      <div class="p-2 rounded-xl border ${idx === 0 ? 'bg-blue-500/10 border-blue-500/30' : 'bg-[#0B0F19] border-slate-800'} text-xs">
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="text-[10px] font-mono font-bold ${idx === 0 ? 'text-emerald-400' : 'text-slate-400'}">
+                            ${idx === 0 ? '★ LATEST' : 'STEP #' + (history.length - idx)}
+                          </span>
+                          <span class="text-[10px] font-mono text-slate-300">${formatDateTimeDisplay(item.timestamp)}</span>
+                        </div>
+                        <p class="text-slate-100 mt-0.5 break-words">${escapeHtml(item.action)}</p>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          </article>
+        `;
+      }).join('');
+    };
+
+    // ==========================================
+    // GLOBAL UI HANDLERS (Attached to window)
+    // ==========================================
+    window.setStatusTab = function(tabName) {
+      activeTab = tabName;
+      ['active', 'overdue', 'completed', 'all'].forEach(t => {
+        const btn = document.getElementById('tabBtn-' + t);
+        if (!btn) return;
+        if (t === activeTab) {
+          btn.className = 'px-3.5 py-1.5 rounded-lg bg-blue-600 text-white shadow transition cursor-pointer';
+        } else {
+          btn.className = 'px-3.5 py-1.5 rounded-lg text-slate-400 hover:text-white transition cursor-pointer';
+        }
+      });
+      window.renderTasks();
+    };
+
+    window.handleFilterChange = function() {
+      window.renderTasks();
+    };
+
+    window.resetAllFilters = function() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('assigneeFilter').value = 'ALL';
+      document.getElementById('priorityFilter').value = 'ALL';
+      window.setStatusTab('all');
+    };
+
+    window.toggleExpandAllLogs = function() {
+      expandAllLogs = !expandAllLogs;
+      if (!expandAllLogs) expandedDropdownIds.clear();
+      document.getElementById('expandAllText').textContent = expandAllLogs
+        ? 'Collapse All Action Logs'
+        : 'Expand All Action Logs';
+      window.renderTasks();
+    };
+
+    window.toggleTaskDropdown = function(taskId) {
+      if (expandedDropdownIds.has(taskId)) {
+        expandedDropdownIds.delete(taskId);
+      } else {
+        expandedDropdownIds.add(taskId);
+      }
+      window.renderTasks();
+    };
+
+    window.submitQuickInlineAction = async function(event, taskId) {
+      event.preventDefault();
+      const input = document.getElementById('quickInput-' + taskId);
+      if (!input || !input.value.trim()) return;
+
+      const idx = tasks.findIndex(t => t.id === taskId);
+      if (idx === -1) return;
+
+      const actionText = input.value.trim();
+      const stamp = getNowLocalIso();
+      const task = tasks[idx];
+      if (!Array.isArray(task.actionHistory)) task.actionHistory = [];
+      task.actionHistory.push({ timestamp: stamp, action: actionText });
+      task.lastActionTaken = actionText;
+      task.lastActionTimestamp = stamp;
+      expandedDropdownIds.add(taskId);
+
+      await syncAllTasksToStorage();
+      window.renderTasks();
+      window.showToast('Action recorded in tracker');
+    };
+
+    window.toggleTaskComplete = async function(taskId) {
+      const idx = tasks.findIndex(t => t.id === taskId);
+      if (idx === -1) return;
+
+      const task = tasks[idx];
+      task.completed = !task.completed;
+      const stamp = getNowLocalIso();
+      const statusMsg = task.completed ? 'Marked task as Completed' : 'Reopened task (Active)';
+      if (!Array.isArray(task.actionHistory)) task.actionHistory = [];
+      task.actionHistory.push({ timestamp: stamp, action: statusMsg });
+      task.lastActionTaken = statusMsg;
+      task.lastActionTimestamp = stamp;
+
+      await syncAllTasksToStorage();
+      window.renderTasks();
+      window.showToast(task.completed ? 'Task marked completed' : 'Task reopened');
+    };
+
+    // ==========================================
+    // NEW / EDIT TASK MODAL FUNCTIONS
+    // ==========================================
+    window.openNewTaskModal = function() {
+      document.getElementById('taskForm').reset();
+      document.getElementById('taskId').value = '';
+      document.getElementById('taskName').value = '';
+      document.getElementById('taskDescription').value = '';
+      document.getElementById('taskAssignedTo').value = '';
+      document.getElementById('taskPriority').value = 'MEDIUM';
+      document.getElementById('taskAssignedDate').value = getTodayDateOnly();
+      document.getElementById('taskDueDate').value = getOffsetLocalIso(48);
+      document.getElementById('taskLastAction').value = 'Task created and assigned';
+      document.getElementById('taskLastActionTimestamp').value = getNowLocalIso();
+      document.getElementById('taskIsCompleted').checked = false;
+
+      document.getElementById('deleteTaskBtn').classList.add('hidden');
+      document.getElementById('modalTitle').textContent = 'Create New Operational Task';
+
+      const modal = document.getElementById('taskModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      setTimeout(() => document.getElementById('taskName').focus(), 50);
+    };
+
+    window.openEditTaskModal = function(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      document.getElementById('taskId').value = task.id;
+      document.getElementById('taskName').value = task.name || '';
+      document.getElementById('taskDescription').value = task.description || '';
+      document.getElementById('taskAssignedTo').value = task.assignedTo || '';
+      document.getElementById('taskPriority').value = task.priority || 'MEDIUM';
+      document.getElementById('taskAssignedDate').value = String(task.assignedDate || getTodayDateOnly()).split('T')[0];
+      document.getElementById('taskDueDate').value = String(task.dueDate || getNowLocalIso()).slice(0, 16);
+      document.getElementById('taskLastAction').value = task.lastActionTaken || '';
+      document.getElementById('taskLastActionTimestamp').value = String(task.lastActionTimestamp || getNowLocalIso()).slice(0, 16);
+      document.getElementById('taskIsCompleted').checked = Boolean(task.completed);
+
+      document.getElementById('deleteTaskBtn').classList.remove('hidden');
+      document.getElementById('modalTitle').textContent = 'Edit Task & Log Action';
+
+      const modal = document.getElementById('taskModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+
+    window.closeTaskModal = function() {
+      const modal = document.getElementById('taskModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    };
+
+    window.autoStampActionTime = function() {
+      document.getElementById('taskLastActionTimestamp').value = getNowLocalIso();
+    };
+
+    window.saveTaskForm = async function(event) {
+      event.preventDefault();
+      const existingId = document.getElementById('taskId').value.trim();
+      const name = document.getElementById('taskName').value.trim();
+      const description = document.getElementById('taskDescription').value.trim();
+      const assignedTo = document.getElementById('taskAssignedTo').value.trim();
+      const priority = document.getElementById('taskPriority').value;
+      const assignedDate = document.getElementById('taskAssignedDate').value;
+      const dueDate = document.getElementById('taskDueDate').value;
+      const actionText = document.getElementById('taskLastAction').value.trim() || 'Task updated';
+      const actionStamp = document.getElementById('taskLastActionTimestamp').value || getNowLocalIso();
+      const completed = document.getElementById('taskIsCompleted').checked;
+
+      if (existingId) {
+        const idx = tasks.findIndex(t => t.id === existingId);
+        if (idx !== -1) {
+          const prev = tasks[idx];
+          const history = Array.isArray(prev.actionHistory) ? [...prev.actionHistory] : [];
+          if (prev.lastActionTaken !== actionText || prev.lastActionTimestamp !== actionStamp) {
+            history.push({ timestamp: actionStamp, action: actionText });
+          }
+          tasks[idx] = normalizeTask({
+            ...prev,
+            name,
+            description,
+            assignedTo,
+            priority,
+            assignedDate,
+            dueDate,
+            completed,
+            lastActionTaken: actionText,
+            lastActionTimestamp: actionStamp,
+            actionHistory: history
+          });
+        }
+        window.showToast('Task updated');
+      } else {
+        const newTask = normalizeTask({
+          name,
+          description,
+          assignedTo,
+          priority,
+          assignedDate,
+          dueDate,
+          completed,
+          lastActionTaken: actionText,
+          lastActionTimestamp: actionStamp,
+          actionHistory: [{ timestamp: actionStamp, action: actionText }]
+        });
+        tasks.unshift(newTask);
+        window.showToast('New task created');
+      }
+
+      await syncAllTasksToStorage();
+      window.closeTaskModal();
+      window.renderTasks();
+    };
+
+    window.confirmDeleteTask = function(taskId) {
+      const task = tasks.find(t => t.id === taskId);
+      if (!task) return;
+      window.openConfirmModal(
+        'Delete Task?',
+        'Permanently delete "' + task.name + '" and its action history?',
+        async () => {
+          tasks = tasks.filter(t => t.id !== taskId);
+          await syncAllTasksToStorage();
+          window.renderTasks();
+          window.showToast('Task deleted');
+        }
+      );
+    };
+
+    window.requestDeleteFromModal = function() {
+      const id = document.getElementById('taskId').value;
+      if (!id) return;
+      window.closeTaskModal();
+      window.confirmDeleteTask(id);
+    };
+
+    // ==========================================
+    // BACKUP HUB: CSV & JSON IMPORT/EXPORT + STANDALONE HTML DOWNLOAD
+    // ==========================================
+    window.openBackupModal = function() {
+      const m = document.getElementById('backupModal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    };
+
+    window.closeBackupModal = function() {
+      const m = document.getElementById('backupModal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    };
+
+    function triggerBrowserDownload(content, filename, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // Download the complete, self-contained HTML application file directly
+    window.downloadStandaloneApp = function() {
+      const doctype = '<!DOCTYPE html>' + String.fromCharCode(10);
+      const fullHtml = doctype + document.documentElement.outerHTML;
+      triggerBrowserDownload(fullHtml, 'TaskOps_Tracker_App.html', 'text/html;charset=utf-8;');
+      window.showToast('Downloaded TaskOps_Tracker_App.html');
+    };
+
+    window.exportToCsv = function() {
+      if (tasks.length === 0) {
+        window.showToast('No tasks to export');
+        return;
+      }
+      const headers = [
+        'id', 'name', 'description', 'assignedTo', 'assignedDate',
+        'dueDate', 'priority', 'completed', 'lastActionTaken',
+        'lastActionTimestamp', 'actionHistory'
+      ];
+
+      const escapeCell = (val) => {
+        const raw = typeof val === 'object' ? JSON.stringify(val) : String(val ?? '');
+        const escapedQuotes = raw.replace(/"/g, '""');
+        return '"' + escapedQuotes + '"';
+      };
+
+      const rowBreak = String.fromCharCode(13, 10);
+      const rows = tasks.map(t => headers.map(h => escapeCell(t[h])).join(','));
+      const csvString = [headers.join(','), ...rows].join(rowBreak);
+
+      triggerBrowserDownload(csvString, 'TaskOps_Backup_' + getTodayDateOnly() + '.csv', 'text/csv;charset=utf-8;');
+      window.showToast('Exported ' + tasks.length + ' tasks to CSV');
+    };
+
+    window.exportToJson = function() {
+      const snapshot = JSON.stringify(tasks, null, 2);
+      triggerBrowserDownload(snapshot, 'TaskOps_Snapshot_' + getTodayDateOnly() + '.json', 'application/json;charset=utf-8;');
+      window.showToast('Exported JSON snapshot');
+    };
+
+    // Safe RFC-4180 CSV Parser using character codes (13 = CR, 10 = LF) so newlines never break source files
+    function parseCsvSafe(text) {
+      const CR = String.fromCharCode(13);
+      const LF = String.fromCharCode(10);
+      const rows = [];
+      let row = [''];
+      let inQuotes = false;
+
+      const cleanText = String(text || '').replace(/^\uFEFF/, '');
+
+      for (let i = 0; i < cleanText.length; i++) {
+        const ch = cleanText[i];
+        const next = cleanText[i + 1];
+
+        if (ch === '"') {
+          if (inQuotes && next === '"') {
+            row[row.length - 1] += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === ',' && !inQuotes) {
+          row.push('');
+        } else if ((ch === CR || ch === LF) && !inQuotes) {
+          if (ch === CR && next === LF) i++;
+          if (row.length > 1 || row[0] !== '') rows.push(row);
+          row = [''];
+        } else {
+          row[row.length - 1] += ch;
+        }
+      }
+      if (row.length > 1 || row[0] !== '') rows.push(row);
+      return rows;
+    }
+
+    window.executeFileImport = async function() {
+      const fileInput = document.getElementById('importFileInput');
+      if (!fileInput.files || fileInput.files.length === 0) {
+        window.showToast('Select a .csv or .json file first');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const modeEl = document.querySelector('input[name="importMode"]:checked');
+      const mode = modeEl ? modeEl.value : 'merge';
+
+      try {
+        const text = await file.text();
+        let imported = [];
+
+        if (file.name.toLowerCase().endsWith('.json') || text.trim().startsWith('[') || text.trim().startsWith('{')) {
+          const parsed = JSON.parse(text);
+          const arr = Array.isArray(parsed) ? parsed : (parsed.tasks || []);
+          imported = arr.map(normalizeTask);
+        } else {
+          const rows = parseCsvSafe(text);
+          if (rows.length < 2) throw new Error('CSV has no task rows');
+          const headers = rows[0].map(h => h.trim());
+          for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            const obj = {};
+            headers.forEach((h, idx) => {
+              let val = r[idx] !== undefined ? r[idx] : '';
+              if (h === 'actionHistory') {
+                try { obj[h] = val ? JSON.parse(val) : []; } catch (e) { obj[h] = []; }
+              } else {
+                obj[h] = val;
+              }
+            });
+            if (obj.name) imported.push(normalizeTask(obj));
+          }
+        }
+
+        if (imported.length === 0) {
+          window.showToast('No valid tasks found in file');
+          return;
+        }
+
+        if (mode === 'replace') {
+          tasks = imported;
+        } else {
+          const map = new Map(tasks.map(t => [t.id, t]));
+          imported.forEach(inc => {
+            if (map.has(inc.id)) {
+              const existing = map.get(inc.id);
+              const combinedHistory = [...(existing.actionHistory || []), ...(inc.actionHistory || [])];
+              const deduped = [];
+              const seen = new Set();
+              combinedHistory.forEach(h => {
+                const key = `${h.timestamp}|${h.action}`;
+                if (!seen.has(key)) {
+                  seen.add(key);
+                  deduped.push(h);
+                }
+              });
+              map.set(inc.id, normalizeTask({ ...existing, ...inc, actionHistory: deduped }));
+            } else {
+              map.set(inc.id, inc);
+            }
+          });
+          tasks = Array.from(map.values());
+        }
+
+        await syncAllTasksToStorage();
+        fileInput.value = '';
+        window.closeBackupModal();
+        window.renderTasks();
+        window.showToast('Synced ' + imported.length + ' tasks (' + mode + ')');
+      } catch (err) {
+        window.showToast('Import error: check file format');
+      }
+    };
+
+    window.restoreDemoTasks = function() {
+      window.openConfirmModal(
+        'Restore Demo Tasks?',
+        'Replace current tasks with the 3 default operational demo tasks?',
+        async () => {
+          tasks = getSeedTasks();
+          await syncAllTasksToStorage();
+          window.closeBackupModal();
+          window.renderTasks();
+          window.showToast('Demo tasks restored');
+        }
+      );
+    };
+
+    window.wipeAllTasks = function() {
+      window.openConfirmModal(
+        'Wipe All Tasks?',
+        'Permanently delete all tasks on this device? Export a CSV backup first if needed.',
+        async () => {
+          tasks = [];
+          await syncAllTasksToStorage();
+          window.closeBackupModal();
+          window.renderTasks();
+          window.showToast('All tasks wiped');
+        }
+      );
+    };
+
+    // Close modals when clicking backdrop
+    document.getElementById('taskModal').addEventListener('click', (e) => {
+      if (e.target.id === 'taskModal') window.closeTaskModal();
+    });
+    document.getElementById('backupModal').addEventListener('click', (e) => {
+      if (e.target.id === 'backupModal') window.closeBackupModal();
+    });
+    document.getElementById('confirmModal').addEventListener('click', (e) => {
+      if (e.target.id === 'confirmModal') window.closeConfirmModal();
+    });
+
+    // ==========================================
+    // BOOTSTRAP APPLICATION
+    // ==========================================
+    window.addEventListener('DOMContentLoaded', async () => {
+      await initStorage();
+      window.renderTasks();
+    });
+  </script>
+
+</body></html>

@@ -1,0 +1,2909 @@
+<!DOCTYPE html>
+<html lang="en"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIwOTUzMjEyMDk2ODE5MTUxMzc4NCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzRjYjQ2MGRlMDZlMmIxZmZfaW5kZXguaHRtbC0xNDMifSwiZXhwIjoxNzk0Mzk0MzY3LCJpYXQiOjE3OTQzOTA3NjcsImFsZyI6IlJTMjU2In0.PAEe8Izqn7Y0nlrWyzndNY8xzFP_cP2F2_EdOhOSwz4IhaebWkHnfEP4ZVgOi7Cmykb5rL4agU81WWkYHI9NnYiFslKesScKL11M7Z503pOE5pEuKBVGRiJnlX0kNz2FsT-ouFTpnyv2OkWz-G7RudXdgik8Kevst2eQnkYDBEzvEKXxey3ZTCpqy9NuMmC_TkmrsWYihVjLK8D6wZJYVF6HAlx7aBga1yVRcvn9zasylorXxoykmZqlARL9--Gz1cnfh-IVEQI2X8qtO5bXBfnVJUgzjIsZhNUwX8mkA7Lukq3MISh14PV0Gg-ISOQKv6c2Jy1w33NoJIqwuTVAIg","c_4cb460de06e2b1ff_index.html-143")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function() {
+  function normalizeSlug(str) {
+    try {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^p{L}p{N}s_-]/gu, '')
+        .replace(/s+/g, '-');
+    } catch (e) {
+      return str
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9s_-]/g, '')
+        .replace(/s+/g, '-');
+    }
+  }
+
+  function findTargetElement(hash) {
+    if (!hash || hash === '#') {
+      return null;
+    }
+    const rawId = hash.startsWith('#') ? hash.slice(1) : hash;
+    let decodedId = rawId;
+    try {
+      decodedId = decodeURIComponent(rawId);
+    } catch (e) {
+      // Ignore URI malformed errors.
+    }
+
+    // 1. Direct ID match (raw and decoded).
+    let target = document.getElementById(rawId) || document.getElementById(decodedId);
+    if (target) {
+      return target;
+    }
+
+    // 2. Name attribute match (<a name="...">).
+    try {
+      if (typeof CSS !== 'undefined' && CSS.escape) {
+        target =
+          document.querySelector('[name="' + CSS.escape(rawId) + '"]') ||
+          document.querySelector('[name="' + CSS.escape(decodedId) + '"]');
+      } else {
+        const namedElements = document.getElementsByName(rawId);
+        if (namedElements && namedElements.length > 0) {
+          return namedElements[0];
+        }
+      }
+    } catch (e) {
+      // Ignore querySelector syntax errors.
+    }
+    if (target) {
+      return target;
+    }
+
+    // 3. Match heading text by slug (for Markdown TOCs where headings lack explicit IDs).
+    const targetSlug = normalizeSlug(decodedId);
+    if (targetSlug) {
+      for (const heading of document.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (normalizeSlug(heading.textContent || '') === targetSlug) {
+          return heading;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  document.addEventListener('click', function(event) {
+    const target = event.target;
+    const anchor = target && typeof target.closest === 'function' ? target.closest('a') : null;
+    if (!anchor) {
+      return;
+    }
+
+    const href = anchor.getAttribute('href');
+    if (
+      !href ||
+      href.trim().toLowerCase().startsWith('javascript:') ||
+      anchor.hasAttribute('download')
+    ) {
+      return;
+    }
+
+    // Check if the link is an in-page hash / anchor link.
+    if (href.startsWith('#')) {
+      event.preventDefault();
+      const targetElement = findTargetElement(href);
+      if (targetElement) {
+        targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+      }
+      return;
+    }
+
+    // Check if the URL has the same origin/pathname but with a hash.
+    try {
+      const url = new URL(anchor.href, window.location.href);
+      if (
+        url.hash &&
+        url.origin === window.location.origin &&
+        url.pathname === window.location.pathname
+      ) {
+        event.preventDefault();
+        const targetElement = findTargetElement(url.hash);
+        if (targetElement) {
+          targetElement.scrollIntoView({behavior: 'smooth', block: 'start'});
+        }
+        return;
+      }
+    } catch (e) {
+      // Fall through if URL parsing fails.
+    }
+
+    // For all external or full navigation links, prevent iframe-level navigation
+    // (which breaks in AGSA WebView or sandboxed iframes) and ensure they open
+    // safely in a new tab/window.
+    if (anchor.target !== '_blank') {
+      event.preventDefault();
+      window.open(anchor.href, '_blank', 'noopener,noreferrer');
+    }
+  }, {capture: true});
+})();</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TaskOps - Offline Mission Task Tracker</title>
+  <meta name="theme-color" content="#0B0F19">
+  <meta name="mobile-web-app-capable" content="yes">
+  <style>
+    :root {
+      --bg-base: #0b0f19;
+      --bg-card: #111827;
+      --bg-elevated: #1e293b;
+      --bg-input: #090d16;
+      --border-color: #1f2937;
+      --border-highlight: #334155;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --primary-glow: rgba(59, 130, 246, 0.25);
+      --emerald: #10b981;
+      --emerald-bg: rgba(16, 185, 129, 0.14);
+      --emerald-border: rgba(16, 185, 129, 0.35);
+      --amber: #f59e0b;
+      --amber-bg: rgba(245, 158, 11, 0.14);
+      --amber-border: rgba(245, 158, 11, 0.35);
+      --rose: #f43f5e;
+      --rose-bg: rgba(244, 63, 94, 0.14);
+      --rose-border: rgba(244, 63, 94, 0.4);
+      --cyan: #06b6d4;
+      --cyan-bg: rgba(6, 182, 212, 0.14);
+      --cyan-border: rgba(6, 182, 212, 0.35);
+      --radius-xl: 18px;
+      --radius-lg: 12px;
+      --radius-md: 9px;
+      --radius-sm: 6px;
+      --shadow-lg: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.45;
+      overflow-x: hidden;
+    }
+
+    button, input, select, textarea {
+      font-family: inherit;
+      font-size: inherit;
+      color: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 999px;
+    }
+
+    /* Header */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(11, 15, 25, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 16px;
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #06b6d4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px var(--primary-glow);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pwa-pill {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.18);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+
+    .status-line {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--emerald);
+      display: inline-block;
+      box-shadow: 0 0 8px var(--emerald);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 13px;
+      border-radius: var(--radius-md);
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border-highlight);
+      color: var(--text-main);
+    }
+    .btn-secondary:hover {
+      background: var(--bg-elevated);
+      border-color: #475569;
+    }
+
+    .btn-emerald {
+      background: var(--emerald-bg);
+      border: 1px solid var(--emerald-border);
+      color: #34d399;
+    }
+    .btn-emerald:hover {
+      background: rgba(16, 185, 129, 0.24);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-danger {
+      background: var(--rose-bg);
+      border: 1px solid var(--rose-border);
+      color: #fb7185;
+    }
+    .btn-danger:hover {
+      background: rgba(244, 63, 94, 0.25);
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 16px 60px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    @media (min-width: 900px) {
+      .controls-bar {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .tabs-group {
+      display: flex;
+      background: var(--bg-card);
+      padding: 4px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      gap: 4px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      padding: 7px 12px;
+      border-radius: var(--radius-md);
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
+    .filters-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      pointer-events: none;
+    }
+
+    .input-field, .select-field {
+      background: var(--bg-card);
+      border: 1px solid var(--border-highlight);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+      font-size: 0.78rem;
+      color: var(--text-main);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .search-box .input-field {
+      width: 100%;
+      padding-left: 34px;
+    }
+
+    .input-field:focus, .select-field:focus, textarea:focus {
+      border-color: var(--primary);
+    }
+
+    /* Task Grid */
+    .task-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .task-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Task Card */
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: var(--shadow-lg);
+      transition: border-color 0.2s ease;
+    }
+
+    .task-card:hover {
+      border-color: #334155;
+    }
+
+    .task-card.overdue-card {
+      border-color: rgba(244, 63, 94, 0.65);
+      box-shadow: 0 8px 28px -6px rgba(244, 63, 94, 0.2);
+    }
+
+    .task-card.completed-card {
+      border-color: rgba(16, 185, 129, 0.35);
+      opacity: 0.92;
+    }
+
+    .card-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .p-CRITICAL {
+      background: var(--rose-bg);
+      color: #fb7185;
+      border: 1px solid var(--rose-border);
+    }
+    .p-HIGH {
+      background: var(--amber-bg);
+      color: #fbbf24;
+      border: 1px solid var(--amber-border);
+    }
+    .p-MEDIUM {
+      background: rgba(234, 179, 8, 0.14);
+      color: #fde047;
+      border: 1px solid rgba(234, 179, 8, 0.35);
+    }
+    .p-LOW {
+      background: rgba(59, 130, 246, 0.14);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+
+    .badge-overdue {
+      background: var(--rose);
+      color: #090d16;
+      font-weight: 800;
+    }
+
+    .badge-pending-count {
+      background: var(--amber-bg);
+      color: #fcd34d;
+      border: 1px solid var(--amber-border);
+    }
+
+    .card-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-btn {
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-highlight);
+      color: var(--text-main);
+      transition: all 0.15s;
+    }
+    .chip-btn:hover {
+      border-color: #64748b;
+    }
+    .chip-btn.done-active {
+      background: var(--emerald-bg);
+      border-color: var(--emerald-border);
+      color: #34d399;
+    }
+
+    .task-title {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 8px;
+      word-break: break-word;
+    }
+    .task-title.line-through {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .task-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      white-space: pre-line;
+      word-break: break-word;
+    }
+
+    /* Meta 3-column grid */
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    @media (max-width: 480px) {
+      .meta-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .meta-box {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 7px 10px;
+    }
+
+    .meta-box.overdue-box {
+      border-color: var(--rose-border);
+      background: rgba(244, 63, 94, 0.08);
+    }
+
+    .meta-label {
+      font-size: 0.63rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-dim);
+      display: block;
+    }
+
+    .meta-val {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-top: 2px;
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Required Actions Pending Section */
+    .pending-panel {
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .pending-panel.has-items {
+      border-color: var(--amber-border);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .panel-title {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pending-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 165px;
+      overflow-y: auto;
+    }
+
+    .pending-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 7px 10px;
+      transition: border-color 0.15s;
+    }
+
+    .pending-item:hover {
+      border-color: var(--amber-border);
+    }
+
+    .pending-check-btn {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-align: left;
+      flex: 1;
+      font-size: 0.78rem;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .check-box-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      background: var(--amber-bg);
+      border: 1px solid var(--amber-border);
+      color: #fbbf24;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 800;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    .pending-check-btn:hover .check-box-icon {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: #090d16;
+    }
+
+    .pending-check-btn:hover span:last-child {
+      color: #34d399;
+    }
+
+    .inline-form {
+      display: flex;
+      gap: 6px;
+    }
+
+    .inline-form input {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border-highlight);
+      border-radius: var(--radius-md);
+      padding: 6px 10px;
+      font-size: 0.75rem;
+      color: var(--text-main);
+      outline: none;
+    }
+    .inline-form input:focus {
+      border-color: var(--amber);
+    }
+
+    /* Last Action Taken & Dropdown Section */
+    .action-panel {
+      background: var(--bg-input);
+      border: 1px solid rgba(59, 130, 246, 0.28);
+      border-radius: var(--radius-lg);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .dropdown-toggle-btn {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 4px 9px;
+      border-radius: 7px;
+      background: var(--cyan-bg);
+      color: #22d3ee;
+      border: 1px solid var(--cyan-border);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .dropdown-toggle-btn:hover {
+      background: rgba(6, 182, 212, 0.25);
+    }
+
+    .last-action-text {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .last-action-time {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+
+    .tracker-drawer {
+      margin-top: 6px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .timeline-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 190px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .timeline-entry {
+      border-left: 2px solid var(--primary);
+      padding-left: 10px;
+      padding-top: 2px;
+      padding-bottom: 2px;
+      background: rgba(17, 24, 39, 0.6);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .timeline-entry.latest {
+      border-left-color: var(--emerald);
+      background: rgba(16, 185, 129, 0.07);
+    }
+
+    .timeline-action {
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .timeline-stamp {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Empty State */
+    .empty-box {
+      border: 2px dashed var(--border-highlight);
+      border-radius: var(--radius-xl);
+      padding: 48px 20px;
+      text-align: center;
+      background: rgba(17, 24, 39, 0.4);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-highlight);
+      border-radius: var(--radius-xl);
+      width: 100%;
+      max-width: 560px;
+      padding: 22px;
+      box-shadow: var(--shadow-lg);
+      max-height: 92vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    .form-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 5px;
+    }
+
+    .full-input {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-highlight);
+      border-radius: var(--radius-md);
+      padding: 9px 12px;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      outline: none;
+    }
+
+    /* Toast */
+    .toast-box {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 80;
+      background: var(--bg-elevated);
+      border: 1px solid var(--primary);
+      color: #fff;
+      padding: 11px 16px;
+      border-radius: var(--radius-lg);
+      font-size: 0.8rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(120%);
+      opacity: 0;
+      transition: all 0.25s ease;
+      pointer-events: none;
+    }
+
+    .toast-box.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand-wrap">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"></path>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">
+            TaskOps <span class="pwa-pill">Offline Ready</span>
+          </div>
+          <div class="status-line">
+            <span class="status-dot"></span>
+            <span id="storageBadge">IndexedDB Ready</span>
+            <span>•</span>
+            <span id="syncCount">2 tasks</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="btn btn-emerald" onclick="window.downloadStandaloneApp()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download App (.html)
+        </button>
+
+        <button type="button" class="btn btn-secondary" onclick="window.openBackupModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          CSV / Backup
+        </button>
+
+        <button type="button" class="btn btn-primary" onclick="window.openNewTaskModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          New Task
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="main-container">
+    <div class="controls-bar">
+      <!-- Status Tabs -->
+      <div class="tabs-group" role="tablist">
+        <button type="button" id="tab-active" class="tab-btn active" onclick="window.switchTab('active')">
+          Active (<span id="countActive">2</span>)
+        </button>
+        <button type="button" id="tab-overdue" class="tab-btn" onclick="window.switchTab('overdue')">
+          Overdue (<span id="countOverdue">1</span>)
+        </button>
+        <button type="button" id="tab-completed" class="tab-btn" onclick="window.switchTab('completed')">
+          Completed (<span id="countCompleted">0</span>)
+        </button>
+        <button type="button" id="tab-all" class="tab-btn" onclick="window.switchTab('all')">
+          All (<span id="countAll">2</span>)
+        </button>
+      </div>
+
+      <!-- Search, Priority Filter, Sort -->
+      <div class="filters-group">
+        <div class="search-box">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" class="input-field" placeholder="Search tasks, assignee, pending, actions..." oninput="window.renderTasks()">
+        </div>
+
+        <select id="priorityFilter" class="select-field" onchange="window.renderTasks()">
+          <option value="ALL">All Priorities</option>
+          <option value="CRITICAL">Critical Only</option>
+          <option value="HIGH">High Only</option>
+          <option value="MEDIUM">Medium Only</option>
+          <option value="LOW">Low Only</option>
+        </select>
+
+        <select id="sortBy" class="select-field" onchange="window.renderTasks()">
+          <option value="dueDateAsc">Sort: Due Date (Soonest)</option>
+          <option value="dueDateDesc">Sort: Due Date (Furthest)</option>
+          <option value="priority">Sort: Priority (High → Low)</option>
+          <option value="lastActionDesc">Sort: Recent Action Time</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-box" style="display: none;">
+      <div style="font-size: 1.05rem; font-weight: 700;">No tasks match the current view</div>
+      <p style="font-size: 0.8rem; color: var(--text-muted); max-width: 380px;">
+        Create a new operational task or switch tabs/filters above to inspect your mission log.
+      </p>
+      <button type="button" class="btn btn-primary" onclick="window.openNewTaskModal()">+ Create Task</button>
+    </div>
+
+    <!-- Tasks Grid -->
+    <div id="taskList" class="task-grid">
+            <article class="task-card overdue-card ">
+              <div>
+                <!-- Card Top Controls -->
+                <div class="card-top-bar">
+                  <div class="badge-row">
+                    <button type="button" class="chip-btn " onclick="window.toggleTaskComplete('TASK-102')">
+                      ○ Mark Done
+                    </button>
+                    <span class="badge p-CRITICAL">CRITICAL</span>
+                    <span class="badge badge-pending-count">2 Pending</span>
+                    <span class="badge badge-overdue">OVERDUE</span>
+                  </div>
+
+                  <div class="card-btn-group">
+                    <button type="button" class="chip-btn" onclick="window.openEditTaskModal('TASK-102')">Edit</button>
+                    <button type="button" class="chip-btn" style="color:#fb7185;" onclick="window.deleteTaskById('TASK-102')" title="Delete Task">✕</button>
+                  </div>
+                </div>
+
+                <!-- Title & Description -->
+                <h3 class="task-title ">Expedient Linear Charge Density Calculations</h3>
+                <p class="task-desc">Compute overpressure margins and Mach stem interaction matrices for breach tests.</p>
+
+                <!-- Metadata 3-Column Row -->
+                <div class="meta-grid">
+                  <div class="meta-box">
+                    <span class="meta-label">Assigned To</span>
+                    <span class="meta-val" title="XO / Napierala">XO / Napierala</span>
+                  </div>
+                  <div class="meta-box">
+                    <span class="meta-label">Date Assigned</span>
+                    <span class="meta-val">Nov 11, 2026</span>
+                  </div>
+                  <div class="meta-box overdue-box">
+                    <span class="meta-label" style="color:#fda4af;">Due Date</span>
+                    <span class="meta-val" style="color:#fb7185;">Nov 11, 2026, 03:00 PM</span>
+                  </div>
+                </div>
+
+                <!-- REQUIRED ACTIONS PENDING CHECKLIST -->
+                <div class="pending-panel has-items">
+                  <div class="panel-header">
+                    <span class="panel-title" style="color:#fbbf24;">
+                      Required Actions Pending (2)
+                    </span>
+                    <span style="font-size:0.65rem; color:var(--text-muted);">Tap ✓ to complete &amp; log</span>
+                  </div>
+
+                  
+                    <div class="pending-list">
+                      
+                        <div class="pending-item">
+                          <button type="button" class="pending-check-btn" onclick="window.completePendingAction('TASK-102', 'REQ-102A')" title="Complete and log to Action Tracker">
+                            <span class="check-box-icon">✓</span>
+                            <span>Verify stand-off distance table for dual-strand configuration</span>
+                          </button>
+                          <button type="button" class="chip-btn" style="padding:2px 6px; color:var(--text-dim);" onclick="window.removePendingAction('TASK-102', 'REQ-102A')" title="Remove without logging">✕</button>
+                        </div>
+                      
+                        <div class="pending-item">
+                          <button type="button" class="pending-check-btn" onclick="window.completePendingAction('TASK-102', 'REQ-102B')" title="Complete and log to Action Tracker">
+                            <span class="check-box-icon">✓</span>
+                            <span>Brief Range Safety Officer on minimum safe distances</span>
+                          </button>
+                          <button type="button" class="chip-btn" style="padding:2px 6px; color:var(--text-dim);" onclick="window.removePendingAction('TASK-102', 'REQ-102B')" title="Remove without logging">✕</button>
+                        </div>
+                      
+                    </div>
+                  
+
+                  <form class="inline-form" onsubmit="window.addPendingFromCard(event, 'TASK-102')">
+                    <input type="text" id="pendingInput-TASK-102" required="" placeholder="Add required action pending...">
+                    <button type="submit" class="chip-btn" style="color:#fbbf24; border-color:var(--amber-border);">+ Add Pending</button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- LAST ACTION TAKEN & TRACKER DROPDOWN -->
+              <div class="action-panel">
+                <div class="panel-header">
+                  <span class="panel-title" style="color:#60a5fa;">Last Action Taken</span>
+                  <button type="button" class="dropdown-toggle-btn" onclick="window.toggleTrackerDropdown('TASK-102')">
+                    <span>Action Tracker (2)</span>
+                    <span>▾</span>
+                  </button>
+                </div>
+
+                <div class="last-action-text">Shock front parameters computed in engineering log</div>
+                <div class="last-action-time">Logged: Nov 11, 2026, 02:00 PM</div>
+
+                
+              </div>
+            </article>
+          
+            <article class="task-card  ">
+              <div>
+                <!-- Card Top Controls -->
+                <div class="card-top-bar">
+                  <div class="badge-row">
+                    <button type="button" class="chip-btn " onclick="window.toggleTaskComplete('TASK-101')">
+                      ○ Mark Done
+                    </button>
+                    <span class="badge p-HIGH">HIGH</span>
+                    <span class="badge badge-pending-count">2 Pending</span>
+                    
+                  </div>
+
+                  <div class="card-btn-group">
+                    <button type="button" class="chip-btn" onclick="window.openEditTaskModal('TASK-101')">Edit</button>
+                    <button type="button" class="chip-btn" style="color:#fb7185;" onclick="window.deleteTaskById('TASK-101')" title="Delete Task">✕</button>
+                  </div>
+                </div>
+
+                <!-- Title & Description -->
+                <h3 class="task-title ">Camp Hansen Perimeter Fence Inspection</h3>
+                <p class="task-desc">Verify structural breach integrity along sector bravo perimeter and log post markers.</p>
+
+                <!-- Metadata 3-Column Row -->
+                <div class="meta-grid">
+                  <div class="meta-box">
+                    <span class="meta-label">Assigned To</span>
+                    <span class="meta-val" title="Combat Engineer Platoon 1">Combat Engineer Platoon 1</span>
+                  </div>
+                  <div class="meta-box">
+                    <span class="meta-label">Date Assigned</span>
+                    <span class="meta-val">Nov 11, 2026</span>
+                  </div>
+                  <div class="meta-box ">
+                    <span class="meta-label" style="">Due Date</span>
+                    <span class="meta-val" style="">Nov 13, 2026, 07:00 AM</span>
+                  </div>
+                </div>
+
+                <!-- REQUIRED ACTIONS PENDING CHECKLIST -->
+                <div class="pending-panel has-items">
+                  <div class="panel-header">
+                    <span class="panel-title" style="color:#fbbf24;">
+                      Required Actions Pending (2)
+                    </span>
+                    <span style="font-size:0.65rem; color:var(--text-muted);">Tap ✓ to complete &amp; log</span>
+                  </div>
+
+                  
+                    <div class="pending-list">
+                      
+                        <div class="pending-item">
+                          <button type="button" class="pending-check-btn" onclick="window.completePendingAction('TASK-101', 'REQ-101A')" title="Complete and log to Action Tracker">
+                            <span class="check-box-icon">✓</span>
+                            <span>Replace rusted concertina wire ties at Post 14</span>
+                          </button>
+                          <button type="button" class="chip-btn" style="padding:2px 6px; color:var(--text-dim);" onclick="window.removePendingAction('TASK-101', 'REQ-101A')" title="Remove without logging">✕</button>
+                        </div>
+                      
+                        <div class="pending-item">
+                          <button type="button" class="pending-check-btn" onclick="window.completePendingAction('TASK-101', 'REQ-101B')" title="Complete and log to Action Tracker">
+                            <span class="check-box-icon">✓</span>
+                            <span>Submit sector bravo photo log to S-3</span>
+                          </button>
+                          <button type="button" class="chip-btn" style="padding:2px 6px; color:var(--text-dim);" onclick="window.removePendingAction('TASK-101', 'REQ-101B')" title="Remove without logging">✕</button>
+                        </div>
+                      
+                    </div>
+                  
+
+                  <form class="inline-form" onsubmit="window.addPendingFromCard(event, 'TASK-101')">
+                    <input type="text" id="pendingInput-TASK-101" required="" placeholder="Add required action pending...">
+                    <button type="submit" class="chip-btn" style="color:#fbbf24; border-color:var(--amber-border);">+ Add Pending</button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- LAST ACTION TAKEN & TRACKER DROPDOWN -->
+              <div class="action-panel">
+                <div class="panel-header">
+                  <span class="panel-title" style="color:#60a5fa;">Last Action Taken</span>
+                  <button type="button" class="dropdown-toggle-btn" onclick="window.toggleTrackerDropdown('TASK-101')">
+                    <span>Action Tracker (3)</span>
+                    <span>▾</span>
+                  </button>
+                </div>
+
+                <div class="last-action-text">Reconnaissance sweep completed along 800m marker</div>
+                <div class="last-action-time">Logged: Nov 11, 2026, 05:00 PM</div>
+
+                
+              </div>
+            </article>
+          </div>
+  </main>
+
+  <!-- MODAL: Add / Edit Task -->
+  <div id="taskModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modalTitle" class="modal-title">Create Operational Task</h2>
+        <button type="button" class="chip-btn" onclick="window.closeTaskModal()">✕ Close</button>
+      </div>
+
+      <form id="taskForm" class="form-grid" onsubmit="window.saveTaskForm(event)">
+        <input type="hidden" id="taskId">
+
+        <div>
+          <label class="field-label" for="taskName">1. Task Name *</label>
+          <input type="text" id="taskName" required="" class="full-input" placeholder="e.g., Inspect Sector Bravo Perimeter Obstacles">
+        </div>
+
+        <div>
+          <label class="field-label" for="taskDescription">2. Description / Details</label>
+          <textarea id="taskDescription" rows="2" class="full-input" placeholder="Notes, coordinates, resources, or special instructions..."></textarea>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <label class="field-label" for="taskAssignedTo">3. Assigned To *</label>
+            <input type="text" id="taskAssignedTo" required="" class="full-input" placeholder="Person, Squad, or Section">
+          </div>
+          <div>
+            <label class="field-label" for="taskPriority">4. Priority *</label>
+            <select id="taskPriority" class="full-input">
+              <option value="CRITICAL">CRITICAL</option>
+              <option value="HIGH">HIGH</option>
+              <option value="MEDIUM" selected="">MEDIUM</option>
+              <option value="LOW">LOW</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div>
+            <label class="field-label" for="taskAssignedDate">5. Date Assigned *</label>
+            <input type="date" id="taskAssignedDate" required="" class="full-input">
+          </div>
+          <div>
+            <label class="field-label" for="taskDueDate">6. Due Date &amp; Time *</label>
+            <input type="datetime-local" id="taskDueDate" required="" class="full-input">
+          </div>
+        </div>
+
+        <!-- Required Actions Pending Builder -->
+        <div class="pending-panel has-items" style="margin-top:0;">
+          <div class="panel-header">
+            <span class="panel-title" style="color:#fbbf24;">7. Required Actions Pending (Checklist)</span>
+            <span style="font-size:0.65rem; color:var(--text-muted);">Completing an item logs it to History</span>
+          </div>
+          <div class="inline-form">
+            <input type="text" id="modalPendingInput" placeholder="Type a required step and click + Add..." onkeydown="if(event.key==='Enter'){event.preventDefault();window.addModalPendingItem();}">
+            <button type="button" class="btn btn-secondary" onclick="window.addModalPendingItem()">+ Add</button>
+          </div>
+          <div id="modalPendingList" class="pending-list"></div>
+        </div>
+
+        <!-- Last Action Taken & Timestamp -->
+        <div class="action-panel">
+          <div class="panel-header">
+            <span class="panel-title" style="color:#60a5fa;">8. Last Action Taken &amp; Timestamp</span>
+            <button type="button" class="chip-btn" onclick="window.setModalTimestampNow()">Stamp Now</button>
+          </div>
+          <input type="text" id="taskLastAction" class="full-input" placeholder="e.g., Assigned team and staged equipment" oninput="window.setModalTimestampNow()">
+          <div>
+            <label class="field-label" for="taskLastActionTimestamp">Date &amp; Time of Last Action</label>
+            <input type="datetime-local" id="taskLastActionTimestamp" class="full-input">
+          </div>
+        </div>
+
+        <label style="display:flex; align-items:center; gap:8px; font-size:0.8rem; font-weight:600; cursor:pointer;">
+          <input type="checkbox" id="taskIsCompleted" style="width:16px; height:16px;">
+          Mark task as Completed / Archived
+        </label>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid var(--border-color);">
+          <button type="button" id="modalDeleteBtn" class="btn btn-danger" style="display:none;" onclick="window.deleteTaskFromModal()">
+            Delete Task
+          </button>
+          <div style="display:flex; gap:8px; margin-left:auto;">
+            <button type="button" class="btn btn-secondary" onclick="window.closeTaskModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Task</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CSV / JSON Data & Backup Hub -->
+  <div id="backupModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Cross-Device CSV &amp; JSON Backup Hub</h2>
+        <button type="button" class="chip-btn" onclick="window.closeBackupModal()">✕ Close</button>
+      </div>
+
+      <div class="form-grid">
+        <div class="pending-panel" style="margin-top:0;">
+          <div class="panel-title" style="color:#34d399;">Export Tasks for Device Transfer</div>
+          <p style="font-size:0.76rem; color:var(--text-muted);">
+            Export all tasks—including full <strong>Required Actions Pending</strong> checklists and chronological <strong>Action Tracker</strong> logs—to a CSV or JSON file.
+          </p>
+          <div class="two-col" style="margin-top:4px;">
+            <button type="button" class="btn btn-secondary" onclick="window.exportToCsv()">Export CSV (.csv)</button>
+            <button type="button" class="btn btn-secondary" onclick="window.exportToJson()">Export JSON (.json)</button>
+          </div>
+        </div>
+
+        <div class="action-panel">
+          <div class="panel-title" style="color:#60a5fa;">Import Tasks from CSV or JSON</div>
+          <p style="font-size:0.76rem; color:var(--text-muted);">
+            Upload a previously exported <code>.csv</code> or <code>.json</code> file to restore or merge tasks onto this device.
+          </p>
+          <input type="file" id="importFileInput" accept=".csv,.json,text/csv,application/json" class="full-input">
+
+          <div style="display:flex; gap:16px; align-items:center; font-size:0.78rem; padding:4px 0;">
+            <span style="color:var(--text-muted); font-weight:600;">Import Mode:</span>
+            <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer;">
+              <input type="radio" name="importMode" value="merge" checked=""> Merge &amp; Update ID
+            </label>
+            <label style="display:inline-flex; align-items:center; gap:5px; cursor:pointer; color:#fb7185;">
+              <input type="radio" name="importMode" value="replace"> Replace All
+            </label>
+          </div>
+
+          <button type="button" class="btn btn-primary" onclick="window.handleFileImport()">Upload &amp; Sync Tasks</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="toast-box">Action saved</div>
+
+  <script>
+    (function() {
+      const DB_NAME = 'TaskOps_Offline_DB';
+      const DB_VERSION = 1;
+      const STORE_NAME = 'tasks';
+      const LS_FALLBACK_KEY = 'TaskOps_Offline_Backup_v2';
+
+      let dbInstance = null;
+      let tasks = [];
+      let activeTab = 'active';
+      let expandedIds = new Set();
+      let modalPendingItems = [];
+
+      // ==========================================
+      // DATE & STRING HELPERS
+      // ==========================================
+      function getNowLocalIso() {
+        const now = new Date();
+        const offsetMs = now.getTimezoneOffset() * 60000;
+        return new Date(now.getTime() - offsetMs).toISOString().slice(0, 16);
+      }
+
+      function getOffsetLocalIso(hoursOffset) {
+        const d = new Date(Date.now() + hoursOffset * 3600000);
+        const offsetMs = d.getTimezoneOffset() * 60000;
+        return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
+      }
+
+      function getTodayDateOnly() {
+        return getNowLocalIso().split('T')[0];
+      }
+
+      function formatDateOnly(str) {
+        if (!str) return 'N/A';
+        const parts = String(str).split('T')[0].split('-');
+        if (parts.length === 3) {
+          const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+          if (!isNaN(d.getTime())) {
+            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+          }
+        }
+        return str;
+      }
+
+      function formatDateTime(str) {
+        if (!str) return 'N/A';
+        const d = new Date(str);
+        if (isNaN(d.getTime())) return str;
+        return d.toLocaleString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      }
+
+      function escapeHtml(val) {
+        if (val === null || val === undefined) return '';
+        return String(val)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function isTaskOverdue(task) {
+        if (!task || task.completed || !task.dueDate) return false;
+        const due = new Date(task.dueDate).getTime();
+        return !isNaN(due) && due < Date.now();
+      }
+
+      window.showToast = function(msg) {
+        const el = document.getElementById('toastBox');
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add('visible');
+        clearTimeout(el._timer);
+        el._timer = setTimeout(() => el.classList.remove('visible'), 2800);
+      };
+
+      // ==========================================
+      // NORMALIZATION & SEED DATA
+      // ==========================================
+      function normalizeTask(raw) {
+        const nowIso = getNowLocalIso();
+        const id = raw.id ? String(raw.id).trim() : ('TASK-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 5).toUpperCase());
+
+        let history = Array.isArray(raw.actionHistory) ? [...raw.actionHistory] : [];
+        const fallbackAction = raw.lastActionTaken ? String(raw.lastActionTaken).trim() : 'Task logged';
+        const fallbackStamp = raw.lastActionTimestamp || nowIso;
+
+        if (history.length === 0) {
+          history.push({ timestamp: fallbackStamp, action: fallbackAction });
+        }
+        history.sort((a, b) => new Date(a.timestamp || 0).getTime() - new Date(b.timestamp || 0).getTime());
+        const latest = history[history.length - 1];
+
+        let pendingActions = Array.isArray(raw.pendingActions) ? [...raw.pendingActions] : [];
+        pendingActions = pendingActions.map((item, idx) => {
+          if (typeof item === 'string') {
+            return { id: 'REQ-' + idx + '-' + Date.now().toString(36), text: item.trim() };
+          }
+          if (item && typeof item.text === 'string') {
+            return { id: String(item.id || ('REQ-' + idx)), text: item.text.trim() };
+          }
+          return null;
+        }).filter(Boolean).filter(i => i.text.length > 0);
+
+        const validPriorities = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+        const prio = validPriorities.includes(String(raw.priority || '').toUpperCase())
+          ? String(raw.priority).toUpperCase()
+          : 'MEDIUM';
+
+        return {
+          id,
+          name: String(raw.name || 'Untitled Task').trim(),
+          description: String(raw.description || '').trim(),
+          assignedTo: String(raw.assignedTo || 'Unassigned').trim(),
+          assignedDate: String(raw.assignedDate || getTodayDateOnly()).split('T')[0],
+          dueDate: raw.dueDate || getOffsetLocalIso(48),
+          priority: prio,
+          completed: Boolean(raw.completed === true || raw.completed === 'true'),
+          lastActionTaken: latest.action,
+          lastActionTimestamp: latest.timestamp,
+          actionHistory: history,
+          pendingActions
+        };
+      }
+
+      function getSeedTasks() {
+        return [
+          normalizeTask({
+            id: 'TASK-101',
+            name: 'Camp Hansen Perimeter Fence Inspection',
+            description: 'Verify structural breach integrity along sector bravo perimeter and log post markers.',
+            assignedTo: 'Combat Engineer Platoon 1',
+            assignedDate: getTodayDateOnly(),
+            dueDate: getOffsetLocalIso(36),
+            priority: 'HIGH',
+            completed: false,
+            pendingActions: [
+              { id: 'REQ-101A', text: 'Replace rusted concertina wire ties at Post 14' },
+              { id: 'REQ-101B', text: 'Submit sector bravo photo log to S-3' }
+            ],
+            actionHistory: [
+              { timestamp: getOffsetLocalIso(-24), action: 'Order issued by Operations section' },
+              { timestamp: getOffsetLocalIso(-12), action: 'Tool assignment and loadout staging complete' },
+              { timestamp: getOffsetLocalIso(-2), action: 'Reconnaissance sweep completed along 800m marker' }
+            ]
+          }),
+          normalizeTask({
+            id: 'TASK-102',
+            name: 'Expedient Linear Charge Density Calculations',
+            description: 'Compute overpressure margins and Mach stem interaction matrices for breach tests.',
+            assignedTo: 'XO / Napierala',
+            assignedDate: getTodayDateOnly(),
+            dueDate: getOffsetLocalIso(-4),
+            priority: 'CRITICAL',
+            completed: false,
+            pendingActions: [
+              { id: 'REQ-102A', text: 'Verify stand-off distance table for dual-strand configuration' },
+              { id: 'REQ-102B', text: 'Brief Range Safety Officer on minimum safe distances' }
+            ],
+            actionHistory: [
+              { timestamp: getOffsetLocalIso(-30), action: 'Initial Chapman-Jouguet formula setup' },
+              { timestamp: getOffsetLocalIso(-5), action: 'Shock front parameters computed in engineering log' }
+            ]
+          })
+        ];
+      }
+
+      // ==========================================
+      // STORAGE ENGINE (IndexedDB + LocalStorage)
+      // ==========================================
+      function initIndexedDB() {
+        return new Promise((resolve) => {
+          if (!window.indexedDB) {
+            resolve(null);
+            return;
+          }
+          try {
+            const req = indexedDB.open(DB_NAME, DB_VERSION);
+            req.onupgradeneeded = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+              }
+            };
+            req.onsuccess = (e) => {
+              dbInstance = e.target.result;
+              resolve(dbInstance);
+            };
+            req.onerror = () => resolve(null);
+          } catch (err) {
+            resolve(null);
+          }
+        });
+      }
+
+      async function loadTasksFromStorage() {
+        try {
+          const rawLs = localStorage.getItem(LS_FALLBACK_KEY);
+          if (rawLs) {
+            const parsed = JSON.parse(rawLs);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              return parsed.map(normalizeTask);
+            }
+          }
+        } catch (e) {}
+
+        if (dbInstance) {
+          try {
+            const idbTasks = await new Promise((resolve) => {
+              const tx = dbInstance.transaction(STORE_NAME, 'readonly');
+              const req = tx.objectStore(STORE_NAME).getAll();
+              req.onsuccess = () => resolve(req.result || []);
+              req.onerror = () => resolve([]);
+            });
+            if (idbTasks.length > 0) {
+              return idbTasks.map(normalizeTask);
+            }
+          } catch (e) {}
+        }
+        return null;
+      }
+
+      async function saveAllTasksToStorage() {
+        try {
+          localStorage.setItem(LS_FALLBACK_KEY, JSON.stringify(tasks));
+        } catch (e) {}
+
+        if (dbInstance) {
+          try {
+            await new Promise((resolve) => {
+              const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+              const store = tx.objectStore(STORE_NAME);
+              store.clear();
+              tasks.forEach(t => store.put(t));
+              tx.oncomplete = () => resolve();
+              tx.onerror = () => resolve();
+            });
+          } catch (e) {}
+        }
+      }
+
+      // ==========================================
+      // RENDER UI
+      // ==========================================
+      window.switchTab = function(tabName) {
+        activeTab = tabName;
+        ['active', 'overdue', 'completed', 'all'].forEach(t => {
+          const btn = document.getElementById('tab-' + t);
+          if (btn) {
+            if (t === tabName) btn.classList.add('active');
+            else btn.classList.remove('active');
+          }
+        });
+        window.renderTasks();
+      };
+
+      window.renderTasks = function() {
+        const listEl = document.getElementById('taskList');
+        const emptyEl = document.getElementById('emptyState');
+
+        const activeCount = tasks.filter(t => !t.completed).length;
+        const overdueCount = tasks.filter(t => isTaskOverdue(t)).length;
+        const completedCount = tasks.filter(t => t.completed).length;
+
+        document.getElementById('countActive').textContent = activeCount;
+        document.getElementById('countOverdue').textContent = overdueCount;
+        document.getElementById('countCompleted').textContent = completedCount;
+        document.getElementById('countAll').textContent = tasks.length;
+        document.getElementById('syncCount').textContent = tasks.length + ' tasks';
+
+        const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+        const prioFilter = document.getElementById('priorityFilter').value || 'ALL';
+        const sortMode = document.getElementById('sortBy').value || 'dueDateAsc';
+
+        let filtered = tasks.filter(task => {
+          if (activeTab === 'active' && task.completed) return false;
+          if (activeTab === 'completed' && !task.completed) return false;
+          if (activeTab === 'overdue' && !isTaskOverdue(task)) return false;
+
+          if (prioFilter !== 'ALL' && task.priority !== prioFilter) return false;
+
+          if (q !== '') {
+            const matchName = (task.name || '').toLowerCase().includes(q);
+            const matchDesc = (task.description || '').toLowerCase().includes(q);
+            const matchAssign = (task.assignedTo || '').toLowerCase().includes(q);
+            const matchPending = (task.pendingActions || []).some(p => (p.text || '').toLowerCase().includes(q));
+            const matchHist = (task.actionHistory || []).some(h => (h.action || '').toLowerCase().includes(q));
+            if (!matchName && !matchDesc && !matchAssign && !matchPending && !matchHist) return false;
+          }
+          return true;
+        });
+
+        const weights = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+        filtered.sort((a, b) => {
+          if (sortMode === 'dueDateAsc') return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+          if (sortMode === 'dueDateDesc') return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+          if (sortMode === 'priority') return (weights[b.priority] || 0) - (weights[a.priority] || 0);
+          if (sortMode === 'lastActionDesc') return new Date(b.lastActionTimestamp || 0).getTime() - new Date(a.lastActionTimestamp || 0).getTime();
+          return 0;
+        });
+
+        if (filtered.length === 0) {
+          listEl.innerHTML = '';
+          emptyEl.style.display = 'flex';
+          return;
+        }
+
+        emptyEl.style.display = 'none';
+
+        listEl.innerHTML = filtered.map(task => {
+          const overdue = isTaskOverdue(task);
+          const pendingList = Array.isArray(task.pendingActions) ? task.pendingActions : [];
+          const historyList = Array.isArray(task.actionHistory) ? task.actionHistory : [];
+          const isOpen = expandedIds.has(task.id);
+
+          return `
+            <article class="task-card ${overdue ? 'overdue-card' : ''} ${task.completed ? 'completed-card' : ''}">
+              <div>
+                <!-- Card Top Controls -->
+                <div class="card-top-bar">
+                  <div class="badge-row">
+                    <button type="button" class="chip-btn ${task.completed ? 'done-active' : ''}" onclick="window.toggleTaskComplete('${escapeHtml(task.id)}')">
+                      ${task.completed ? '✓ Completed' : '○ Mark Done'}
+                    </button>
+                    <span class="badge p-${escapeHtml(task.priority)}">${escapeHtml(task.priority)}</span>
+                    ${pendingList.length > 0 ? `<span class="badge badge-pending-count">${pendingList.length} Pending</span>` : ''}
+                    ${overdue ? `<span class="badge badge-overdue">OVERDUE</span>` : ''}
+                  </div>
+
+                  <div class="card-btn-group">
+                    <button type="button" class="chip-btn" onclick="window.openEditTaskModal('${escapeHtml(task.id)}')">Edit</button>
+                    <button type="button" class="chip-btn" style="color:#fb7185;" onclick="window.deleteTaskById('${escapeHtml(task.id)}')" title="Delete Task">✕</button>
+                  </div>
+                </div>
+
+                <!-- Title & Description -->
+                <h3 class="task-title ${task.completed ? 'line-through' : ''}">${escapeHtml(task.name)}</h3>
+                ${task.description ? `<p class="task-desc">${escapeHtml(task.description)}</p>` : ''}
+
+                <!-- Metadata 3-Column Row -->
+                <div class="meta-grid">
+                  <div class="meta-box">
+                    <span class="meta-label">Assigned To</span>
+                    <span class="meta-val" title="${escapeHtml(task.assignedTo)}">${escapeHtml(task.assignedTo)}</span>
+                  </div>
+                  <div class="meta-box">
+                    <span class="meta-label">Date Assigned</span>
+                    <span class="meta-val">${formatDateOnly(task.assignedDate)}</span>
+                  </div>
+                  <div class="meta-box ${overdue ? 'overdue-box' : ''}">
+                    <span class="meta-label" style="${overdue ? 'color:#fda4af;' : ''}">Due Date</span>
+                    <span class="meta-val" style="${overdue ? 'color:#fb7185;' : ''}">${formatDateTime(task.dueDate)}</span>
+                  </div>
+                </div>
+
+                <!-- REQUIRED ACTIONS PENDING CHECKLIST -->
+                <div class="pending-panel ${pendingList.length > 0 ? 'has-items' : ''}">
+                  <div class="panel-header">
+                    <span class="panel-title" style="color:#fbbf24;">
+                      Required Actions Pending (${pendingList.length})
+                    </span>
+                    <span style="font-size:0.65rem; color:var(--text-muted);">Tap ✓ to complete &amp; log</span>
+                  </div>
+
+                  ${pendingList.length > 0 ? `
+                    <div class="pending-list">
+                      ${pendingList.map(req => `
+                        <div class="pending-item">
+                          <button type="button" class="pending-check-btn" onclick="window.completePendingAction('${escapeHtml(task.id)}', '${escapeHtml(req.id)}')" title="Complete and log to Action Tracker">
+                            <span class="check-box-icon">✓</span>
+                            <span>${escapeHtml(req.text)}</span>
+                          </button>
+                          <button type="button" class="chip-btn" style="padding:2px 6px; color:var(--text-dim);" onclick="window.removePendingAction('${escapeHtml(task.id)}', '${escapeHtml(req.id)}')" title="Remove without logging">✕</button>
+                        </div>
+                      `).join('')}
+                    </div>
+                  ` : `
+                    <div style="font-size:0.74rem; color:var(--text-dim); font-style:italic;">All required pending actions completed.</div>
+                  `}
+
+                  <form class="inline-form" onsubmit="window.addPendingFromCard(event, '${escapeHtml(task.id)}')">
+                    <input type="text" id="pendingInput-${escapeHtml(task.id)}" required placeholder="Add required action pending..." />
+                    <button type="submit" class="chip-btn" style="color:#fbbf24; border-color:var(--amber-border);">+ Add Pending</button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- LAST ACTION TAKEN & TRACKER DROPDOWN -->
+              <div class="action-panel">
+                <div class="panel-header">
+                  <span class="panel-title" style="color:#60a5fa;">Last Action Taken</span>
+                  <button type="button" class="dropdown-toggle-btn" onclick="window.toggleTrackerDropdown('${escapeHtml(task.id)}')">
+                    <span>Action Tracker (${historyList.length})</span>
+                    <span>${isOpen ? '▴' : '▾'}</span>
+                  </button>
+                </div>
+
+                <div class="last-action-text">${escapeHtml(task.lastActionTaken)}</div>
+                <div class="last-action-time">Logged: ${formatDateTime(task.lastActionTimestamp)}</div>
+
+                ${isOpen ? `
+                  <div class="tracker-drawer">
+                    <div style="font-size:0.7rem; font-weight:700; color:#cbd5e1; display:flex; justify-content:space-between;">
+                      <span>Chronological Action History</span>
+                      <span>${historyList.length} total entries</span>
+                    </div>
+
+                    <div class="timeline-list">
+                      ${historyList.slice().reverse().map((entry, idx) => `
+                        <div class="timeline-entry ${idx === 0 ? 'latest' : ''}">
+                          <div class="timeline-action">${escapeHtml(entry.action)}</div>
+                          <div class="timeline-stamp">${formatDateTime(entry.timestamp)}</div>
+                        </div>
+                      `).join('')}
+                    </div>
+
+                    <form class="inline-form" onsubmit="window.quickLogAction(event, '${escapeHtml(task.id)}')">
+                      <input type="text" id="quickLogInput-${escapeHtml(task.id)}" required placeholder="Log new action taken..." />
+                      <button type="submit" class="btn btn-primary" style="padding:6px 12px; font-size:0.74rem;">Log Action</button>
+                    </form>
+                  </div>
+                ` : ''}
+              </div>
+            </article>
+          `;
+        }).join('');
+      };
+
+      // ==========================================
+      // CARD INTERACTION HANDLERS
+      // ==========================================
+      window.toggleTrackerDropdown = function(taskId) {
+        if (expandedIds.has(taskId)) expandedIds.delete(taskId);
+        else expandedIds.add(taskId);
+        window.renderTasks();
+      };
+
+      window.addPendingFromCard = async function(event, taskId) {
+        event.preventDefault();
+        const input = document.getElementById('pendingInput-' + taskId);
+        if (!input || !input.value.trim()) return;
+
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        if (!Array.isArray(task.pendingActions)) task.pendingActions = [];
+        task.pendingActions.push({
+          id: 'REQ-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 5).toUpperCase(),
+          text: input.value.trim()
+        });
+
+        await saveAllTasksToStorage();
+        window.renderTasks();
+        window.showToast('Added required action pending');
+      };
+
+      window.completePendingAction = async function(taskId, reqId) {
+        const task = tasks.find(t => t.id === taskId);
+        if (!task || !Array.isArray(task.pendingActions)) return;
+
+        const idx = task.pendingActions.findIndex(item => item.id === reqId);
+        if (idx === -1) return;
+
+        const [completedItem] = task.pendingActions.splice(idx, 1);
+        const nowStamp = getNowLocalIso();
+        const logText = 'Completed required action: ' + completedItem.text;
+
+        if (!Array.isArray(task.actionHistory)) task.actionHistory = [];
+        task.actionHistory.push({
+          timestamp: nowStamp,
+          action: logText
+        });
+        task.lastActionTaken = logText;
+        task.lastActionTimestamp = nowStamp;
+
+        await saveAllTasksToStorage();
+        window.renderTasks();
+        window.showToast('Completed & logged to Action Tracker');
+      };
+
+      window.removePendingAction = async function(taskId, reqId) {
+        const task = tasks.find(t => t.id === taskId);
+        if (!task || !Array.isArray(task.pendingActions)) return;
+        task.pendingActions = task.pendingActions.filter(item => item.id !== reqId);
+        await saveAllTasksToStorage();
+        window.renderTasks();
+        window.showToast('Removed pending action');
+      };
+
+      window.quickLogAction = async function(event, taskId) {
+        event.preventDefault();
+        const input = document.getElementById('quickLogInput-' + taskId);
+        if (!input || !input.value.trim()) return;
+
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const text = input.value.trim();
+        const stamp = getNowLocalIso();
+
+        if (!Array.isArray(task.actionHistory)) task.actionHistory = [];
+        task.actionHistory.push({ timestamp: stamp, action: text });
+        task.lastActionTaken = text;
+        task.lastActionTimestamp = stamp;
+
+        await saveAllTasksToStorage();
+        window.renderTasks();
+        window.showToast('Action logged to tracker');
+      };
+
+      window.toggleTaskComplete = async function(taskId) {
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        task.completed = !task.completed;
+        const stamp = getNowLocalIso();
+        const msg = task.completed ? 'Task marked Completed / Archived' : 'Task reopened to Active status';
+
+        if (!Array.isArray(task.actionHistory)) task.actionHistory = [];
+        task.actionHistory.push({ timestamp: stamp, action: msg });
+        task.lastActionTaken = msg;
+        task.lastActionTimestamp = stamp;
+
+        await saveAllTasksToStorage();
+        window.renderTasks();
+        window.showToast(task.completed ? 'Task marked completed' : 'Task reopened');
+      };
+
+      window.deleteTaskById = async function(taskId) {
+        tasks = tasks.filter(t => t.id !== taskId);
+        await saveAllTasksToStorage();
+        window.renderTasks();
+        window.showToast('Task deleted');
+      };
+
+      // ==========================================
+      // ADD / EDIT MODAL LOGIC
+      // ==========================================
+      function renderModalPendingList() {
+        const box = document.getElementById('modalPendingList');
+        if (!box) return;
+        if (modalPendingItems.length === 0) {
+          box.innerHTML = '<div style="font-size:0.74rem; color:var(--text-dim); font-style:italic;">No pending required actions added yet.</div>';
+          return;
+        }
+        box.innerHTML = modalPendingItems.map(item => `
+          <div class="pending-item">
+            <span style="font-size:0.78rem;">${escapeHtml(item.text)}</span>
+            <button type="button" class="chip-btn" onclick="window.removeModalPendingItem('${escapeHtml(item.id)}')">✕</button>
+          </div>
+        `).join('');
+      }
+
+      window.addModalPendingItem = function() {
+        const input = document.getElementById('modalPendingInput');
+        if (!input || !input.value.trim()) return;
+        modalPendingItems.push({
+          id: 'REQ-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).slice(2, 5).toUpperCase(),
+          text: input.value.trim()
+        });
+        input.value = '';
+        renderModalPendingList();
+        input.focus();
+      };
+
+      window.removeModalPendingItem = function(id) {
+        modalPendingItems = modalPendingItems.filter(i => i.id !== id);
+        renderModalPendingList();
+      };
+
+      window.setModalTimestampNow = function() {
+        const el = document.getElementById('taskLastActionTimestamp');
+        if (el) el.value = getNowLocalIso();
+      };
+
+      window.openNewTaskModal = function() {
+        document.getElementById('taskForm').reset();
+        document.getElementById('taskId').value = '';
+        document.getElementById('taskPriority').value = 'MEDIUM';
+        document.getElementById('taskAssignedDate').value = getTodayDateOnly();
+        document.getElementById('taskDueDate').value = getOffsetLocalIso(48);
+        document.getElementById('taskLastAction').value = 'Task created and assigned';
+        document.getElementById('taskLastActionTimestamp').value = getNowLocalIso();
+        document.getElementById('taskIsCompleted').checked = false;
+        document.getElementById('modalPendingInput').value = '';
+        modalPendingItems = [];
+        renderModalPendingList();
+
+        document.getElementById('modalDeleteBtn').style.display = 'none';
+        document.getElementById('modalTitle').textContent = 'Create Operational Task';
+        document.getElementById('taskModal').classList.add('open');
+      };
+
+      window.openEditTaskModal = function(taskId) {
+        const task = tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        document.getElementById('taskId').value = task.id;
+        document.getElementById('taskName').value = task.name || '';
+        document.getElementById('taskDescription').value = task.description || '';
+        document.getElementById('taskAssignedTo').value = task.assignedTo || '';
+        document.getElementById('taskPriority').value = task.priority || 'MEDIUM';
+        document.getElementById('taskAssignedDate').value = String(task.assignedDate || getTodayDateOnly()).split('T')[0];
+        document.getElementById('taskDueDate').value = String(task.dueDate || getNowLocalIso()).slice(0, 16);
+        document.getElementById('taskLastAction').value = task.lastActionTaken || '';
+        document.getElementById('taskLastActionTimestamp').value = String(task.lastActionTimestamp || getNowLocalIso()).slice(0, 16);
+        document.getElementById('taskIsCompleted').checked = Boolean(task.completed);
+        document.getElementById('modalPendingInput').value = '';
+
+        modalPendingItems = Array.isArray(task.pendingActions) ? task.pendingActions.map(p => ({ ...p })) : [];
+        renderModalPendingList();
+
+        document.getElementById('modalDeleteBtn').style.display = 'inline-flex';
+        document.getElementById('modalTitle').textContent = 'Edit Operational Task';
+        document.getElementById('taskModal').classList.add('open');
+      };
+
+      window.closeTaskModal = function() {
+        document.getElementById('taskModal').classList.remove('open');
+      };
+
+      window.deleteTaskFromModal = async function() {
+        const id = document.getElementById('taskId').value;
+        if (!id) return;
+        await window.deleteTaskById(id);
+        window.closeTaskModal();
+      };
+
+      window.saveTaskForm = async function(event) {
+        event.preventDefault();
+
+        const draftPending = document.getElementById('modalPendingInput');
+        if (draftPending && draftPending.value.trim()) {
+          modalPendingItems.push({
+            id: 'REQ-' + Date.now().toString(36).toUpperCase(),
+            text: draftPending.value.trim()
+          });
+          draftPending.value = '';
+        }
+
+        const existingId = document.getElementById('taskId').value.trim();
+        const name = document.getElementById('taskName').value.trim();
+        const description = document.getElementById('taskDescription').value.trim();
+        const assignedTo = document.getElementById('taskAssignedTo').value.trim();
+        const priority = document.getElementById('taskPriority').value;
+        const assignedDate = document.getElementById('taskAssignedDate').value;
+        const dueDate = document.getElementById('taskDueDate').value;
+        const actionText = document.getElementById('taskLastAction').value.trim() || 'Task updated';
+        const actionStamp = document.getElementById('taskLastActionTimestamp').value || getNowLocalIso();
+        const completed = document.getElementById('taskIsCompleted').checked;
+
+        if (existingId) {
+          const idx = tasks.findIndex(t => t.id === existingId);
+          if (idx !== -1) {
+            const prev = tasks[idx];
+            const history = Array.isArray(prev.actionHistory) ? [...prev.actionHistory] : [];
+            if (prev.lastActionTaken !== actionText || prev.lastActionTimestamp !== actionStamp) {
+              history.push({ timestamp: actionStamp, action: actionText });
+            }
+            tasks[idx] = normalizeTask({
+              ...prev,
+              name,
+              description,
+              assignedTo,
+              priority,
+              assignedDate,
+              dueDate,
+              completed,
+              lastActionTaken: actionText,
+              lastActionTimestamp: actionStamp,
+              actionHistory: history,
+              pendingActions: modalPendingItems
+            });
+          }
+          window.showToast('Task updated');
+        } else {
+          const created = normalizeTask({
+            name,
+            description,
+            assignedTo,
+            priority,
+            assignedDate,
+            dueDate,
+            completed,
+            lastActionTaken: actionText,
+            lastActionTimestamp: actionStamp,
+            actionHistory: [{ timestamp: actionStamp, action: actionText }],
+            pendingActions: modalPendingItems
+          });
+          tasks.unshift(created);
+          window.showToast('New task created');
+        }
+
+        await saveAllTasksToStorage();
+        window.closeTaskModal();
+        window.renderTasks();
+      };
+
+      // ==========================================
+      // BACKUP HUB: CSV / JSON / STANDALONE HTML
+      // ==========================================
+      window.openBackupModal = function() {
+        document.getElementById('backupModal').classList.add('open');
+      };
+
+      window.closeBackupModal = function() {
+        document.getElementById('backupModal').classList.remove('open');
+      };
+
+      function triggerDownload(content, filename, mime) {
+        const blob = new Blob([content], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      window.downloadStandaloneApp = function() {
+        const fullHtml = '<!DOCTYPE html>' + String.fromCharCode(10) + document.documentElement.outerHTML;
+        triggerDownload(fullHtml, 'TaskOps_Tracker_App.html', 'text/html;charset=utf-8;');
+        window.showToast('Standalone app downloaded');
+      };
+
+      window.exportToCsv = function() {
+        if (tasks.length === 0) {
+          window.showToast('No tasks to export');
+          return;
+        }
+        const headers = [
+          'id', 'name', 'description', 'assignedTo', 'assignedDate',
+          'dueDate', 'priority', 'completed', 'lastActionTaken',
+          'lastActionTimestamp', 'actionHistory', 'pendingActions'
+        ];
+        const escapeCell = (val) => {
+          const str = typeof val === 'object' ? JSON.stringify(val) : String(val ?? '');
+          return '"' + str.replace(/"/g, '""') + '"';
+        };
+        const crlf = String.fromCharCode(13, 10);
+        const rows = tasks.map(t => headers.map(h => escapeCell(t[h])).join(','));
+        const csv = [headers.join(','), ...rows].join(crlf);
+        triggerDownload(csv, 'TaskOps_Backup_' + getTodayDateOnly() + '.csv', 'text/csv;charset=utf-8;');
+        window.showToast('CSV backup exported');
+      };
+
+      window.exportToJson = function() {
+        const json = JSON.stringify(tasks, null, 2);
+        triggerDownload(json, 'TaskOps_Snapshot_' + getTodayDateOnly() + '.json', 'application/json');
+        window.showToast('JSON backup exported');
+      };
+
+      function parseCsvRfc4180(text) {
+        const cr = String.fromCharCode(13);
+        const lf = String.fromCharCode(10);
+        const rows = [];
+        let row = [''];
+        let inQuotes = false;
+
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          const next = text[i + 1];
+          if (c === '"') {
+            if (inQuotes && next === '"') {
+              row[row.length - 1] += '"';
+              i++;
+            } else {
+              inQuotes = !inQuotes;
+            }
+          } else if (c === ',' && !inQuotes) {
+            row.push('');
+          } else if ((c === cr || c === lf) && !inQuotes) {
+            if (c === cr && next === lf) i++;
+            if (row.length > 1 || row[0] !== '') rows.push(row);
+            row = [''];
+          } else {
+            row[row.length - 1] += c;
+          }
+        }
+        if (row.length > 1 || row[0] !== '') rows.push(row);
+        return rows;
+      }
+
+      window.handleFileImport = function() {
+        const fileInput = document.getElementById('importFileInput');
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+          window.showToast('Select a .csv or .json file first');
+          return;
+        }
+
+        const file = fileInput.files[0];
+        const modeEl = document.querySelector('input[name="importMode"]:checked');
+        const mode = modeEl ? modeEl.value : 'merge';
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const content = e.target.result;
+            let imported = [];
+
+            if (file.name.toLowerCase().endsWith('.json')) {
+              const parsed = JSON.parse(content);
+              if (!Array.isArray(parsed)) throw new Error('Invalid JSON structure');
+              imported = parsed.map(normalizeTask);
+            } else {
+              const rows = parseCsvRfc4180(content);
+              if (rows.length < 2) throw new Error('CSV contains no data rows');
+              const headers = rows[0].map(h => h.trim());
+
+              for (let i = 1; i < rows.length; i++) {
+                const r = rows[i];
+                const obj = {};
+                headers.forEach((h, idx) => {
+                  const val = r[idx] !== undefined ? r[idx] : '';
+                  if (h === 'actionHistory' || h === 'pendingActions') {
+                    try { obj[h] = val ? JSON.parse(val) : []; } catch (err) { obj[h] = []; }
+                  } else {
+                    obj[h] = val;
+                  }
+                });
+                if (obj.name) imported.push(normalizeTask(obj));
+              }
+            }
+
+            if (mode === 'replace') {
+              tasks = imported;
+            } else {
+              const map = new Map(tasks.map(t => [t.id, t]));
+              imported.forEach(inc => {
+                if (map.has(inc.id)) {
+                  const ex = map.get(inc.id);
+                  const mergedHist = [...(ex.actionHistory || []), ...(inc.actionHistory || [])];
+                  const seen = new Set();
+                  const deduped = [];
+                  mergedHist.forEach(h => {
+                    const key = (h.timestamp || '') + '|' + (h.action || '');
+                    if (!seen.has(key)) {
+                      seen.add(key);
+                      deduped.push(h);
+                    }
+                  });
+                  map.set(inc.id, normalizeTask({
+                    ...ex,
+                    ...inc,
+                    actionHistory: deduped,
+                    pendingActions: Array.isArray(inc.pendingActions) ? inc.pendingActions : (ex.pendingActions || [])
+                  }));
+                } else {
+                  map.set(inc.id, inc);
+                }
+              });
+              tasks = Array.from(map.values());
+            }
+
+            await saveAllTasksToStorage();
+            fileInput.value = '';
+            window.closeBackupModal();
+            window.renderTasks();
+            window.showToast('Imported ' + imported.length + ' tasks');
+          } catch (err) {
+            window.showToast('Import error: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      // ==========================================
+      // BOOTSTRAP
+      // ==========================================
+      async function bootstrap() {
+        await initIndexedDB();
+        if (navigator.storage && navigator.storage.persist) {
+          try {
+            const persisted = await navigator.storage.persist();
+            if (persisted) {
+              document.getElementById('storageBadge').textContent = 'IDB Persistent';
+            }
+          } catch (e) {}
+        }
+
+        const stored = await loadTasksFromStorage();
+        if (stored && stored.length > 0) {
+          tasks = stored;
+        } else {
+          tasks = getSeedTasks();
+          await saveAllTasksToStorage();
+        }
+        window.renderTasks();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrap);
+      } else {
+        bootstrap();
+      }
+    })();
+  </script>
+
+</body></html>
